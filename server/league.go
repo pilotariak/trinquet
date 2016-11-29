@@ -12,23 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package main
 
 import (
-	"encoding/json"
-	"net/http"
+	"golang.org/x/net/context"
 
-	"github.com/pilotariak/trinquet/version"
+	"github.com/pilotariak/trinquet/pb"
 )
 
-type VersionResponse struct {
-	Version string `json:"version"`
+type LeagueService struct {
 }
 
-func VersionHandler(w http.ResponseWriter, r *http.Request) {
-	response := VersionResponse{
-		Version: version.Version,
-	}
-	json.NewEncoder(w).Encode(response)
-	return
+func newLeagueService() *LeagueService {
+	return &LeagueService{}
+}
+
+func (ls *LeagueService) GetLeagues(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
+	return &pb.GetLeaguesResponse{}, nil
+}
+
+func (ls *LeagueService) CreateLeague(context.Context, *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
+	return &pb.CreateLeagueResponse{}, nil
+}
+
+func (ls *LeagueService) GetLeague(context.Context, *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
+	return &pb.GetLeagueResponse{}, nil
 }

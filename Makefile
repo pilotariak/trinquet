@@ -73,16 +73,31 @@ init: ## Install requirements
 	@go get -u github.com/kisielk/errcheck
 	@go get -u golang.org/x/tools/cmd/oracle
 	@go get -u github.com/mitchellh/gox
+	@wget https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
 
 .PHONY: deps
 deps: ## Install dependencies
 	@echo -e "$(OK_COLOR)[$(APP)] Update dependencies$(NO_COLOR)"
 	@govendor update
 
+
+.PHONY: proto
+proto: ## Install protocol buffer tools
+	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+	@govendor fetch github.com/golang/protobuf/protoc-gen-go
+	@govendor fetch google.golang.org/grpc
+
+.PHONY: pb
+pb: ## Generate Protobuf
+	@go generate pb/api.go
+
 .PHONY: build
 build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-	@$(GO) build .
+#	@$(GO) build github.com/pilotariak/trinquet
+	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
+	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/client
 
 .PHONY: test
 test: ## Launch unit tests

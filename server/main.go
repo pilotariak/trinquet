@@ -12,22 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package main
 
 import (
-	"encoding/json"
-	"net/http"
+	"net"
+
+	"github.com/Sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
+
+	"github.com/pilotariak/trinquet/pb"
 )
 
-// HealthzResponse contains current health status.
-type HealthzResponse struct {
-	Status string `json:"status"`
+const (
+	port = ":8080"
+)
+
+func init() {
+	grpclog.SetLogger(logrus.StandardLogger())
 }
 
-func HealthzHandler(w http.ResponseWriter, r *http.Request) {
-	response := HealthzResponse{
-		Status: "OK",
+func main() {
+	logrus.Infof("[trinquet] Create the gRPC servers")
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		logrus.Fatalf("failed to listen: %v", err)
 	}
-	json.NewEncoder(w).Encode(response)
-	return
+
+	s := grpc.NewServer()
+	pb.RegisterLeagueServiceServer(s, newLeagueService())
+	logrus.Infof("[trinquet] Listen on %s", port)
+	s.Serve(lis)
 }

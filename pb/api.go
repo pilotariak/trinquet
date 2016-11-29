@@ -12,21 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+//go:generate sh gen.sh
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
-type HelloResponse struct {
-	Message string `json:"message"`
-}
-
-func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	response := HelloResponse{
-		Message: "Welcome to Trinquet. The RESTfull API of Pilotariak.",
-	}
-	json.NewEncoder(w).Encode(response)
-	return
-}
+package pb

@@ -12,21 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package main
 
 import (
-	// "fmt"
-	"net/http"
-	"time"
+	"net"
 
 	"github.com/Sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
+
+	"github.com/pilotariak/trinquet/pb"
 )
 
-func LoggingHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		format := "[http] %s - - [%s] \"%s %s %s\" %s"
-		logrus.Debugf(format, r.RemoteAddr, time.Now().Format(time.RFC1123),
-			r.Method, r.URL.Path, r.Proto, r.UserAgent())
-		h.ServeHTTP(w, r)
-	})
+const (
+	port = ":8080"
+)
+
+func init() {
+	grpclog.SetLogger(logrus.StandardLogger())
+}
+
+func main() {
+	// Set up a connection to the gRPC server.
+	conn, err := grpc.Dial(port, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+
+	client := pb.NewLeagueServiceClient(conn)
+
 }
