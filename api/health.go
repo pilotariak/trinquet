@@ -19,6 +19,7 @@ import (
 	"net/http"
 )
 
+// HealthzResponse contains current health status.
 type HealthzResponse struct {
 	Status string `json:"status"`
 }
