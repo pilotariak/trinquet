@@ -16,19 +16,9 @@ syntax="proto3";
 
 package pb;
 
-// League service defines the public APIs for leagues.
-service LeagueService {
+// for grpc-gateway
+import "google/api/annotations.proto";
 
-  // GetLeagues returns all available League
-  rpc GetLeagues(GetLeaguesRequest) returns (GetLeaguesResponse);
-
-  // CreateLeague creates a new league
-  rpc CreateLeague(CreateLeagueRequest) returns (CreateLeagueResponse);
-
-  // GetLeague return a league
-  rpc GetLeague(GetLeagueRequest) returns (GetLeagueResponse);
-
-}
 
 // League define a pelota league
 message League {
@@ -62,4 +52,32 @@ message GetLeagueRequest {
 
 message GetLeagueResponse {
   League league = 1;
+}
+
+
+// League service defines the public APIs for leagues.
+service LeagueService {
+
+  // List returns all available League
+  rpc List(GetLeaguesRequest) returns (GetLeaguesResponse) {
+    option (google.api.http) = {
+      get: "/v1/leagues"
+    };
+  }
+
+  // Create creates a new league
+  rpc Create(CreateLeagueRequest) returns (CreateLeagueResponse) {
+    option (google.api.http) = {
+      post: "/v1/leagues"
+      body: "*"
+    };
+  }
+
+  // Get return a league
+  rpc Get(GetLeagueRequest) returns (GetLeagueResponse) {
+    option (google.api.http) = {
+      get: "/v1/leages/{name}"
+    };
+  }
+
 }

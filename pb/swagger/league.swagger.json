@@ -14,7 +14,76 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/v1/leages/{name}": {
+      "get": {
+        "summary": "Get return a league",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/pbGetLeagueResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "LeagueService"
+        ]
+      }
+    },
+    "/v1/leagues": {
+      "get": {
+        "summary": "List returns all available League",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/pbGetLeaguesResponse"
+            }
+          }
+        },
+        "tags": [
+          "LeagueService"
+        ]
+      },
+      "post": {
+        "summary": "Create creates a new league",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/pbCreateLeagueResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateLeagueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LeagueService"
+        ]
+      }
+    }
+  },
   "definitions": {
     "pbCreateLeagueRequest": {
       "type": "object",

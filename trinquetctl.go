@@ -15,10 +15,9 @@
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
 
 	"github.com/pilotariak/trinquet/pb"
 )
@@ -27,23 +26,19 @@ const (
 	port = "localhost:8080"
 )
 
-func init() {
-	grpclog.SetLogger(logrus.StandardLogger())
-}
-
 func main() {
 	// Set up a connection to the gRPC server.
 	conn, err := grpc.Dial(port, grpc.WithInsecure())
 	if err != nil {
-		logrus.Fatalf("did not connect: %v", err)
+		glog.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 
 	client := pb.NewLeagueServiceClient(conn)
-	logrus.Info("[trinquet] Retrieve all leagues")
-	resp, err := client.GetLeagues(context.Background(), &pb.GetLeaguesRequest{})
+	glog.Infoln("[trinquet] Retrieve all leagues")
+	resp, err := client.List(context.Background(), &pb.GetLeaguesRequest{})
 	if err != nil {
-		logrus.Fatalf("[trinquet] Could not retrieve leagues: %v", err)
+		glog.Fatalf("[trinquet] Could not retrieve leagues: %v", err)
 	}
-	logrus.Infof("[trinquet] Available leagues: %s", resp)
+	glog.Infof("[trinquet] Available leagues: %s", resp)
 }

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # generate the gRPC code
-
 protoc -I/usr/local/include -I. -I$GOPATH/src -I../vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=Mgoogle/api/annotations.proto=github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api,plugins=grpc:. league.proto
 
 # generate the JSON interface code

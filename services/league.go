@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package services
 
 import (
+	"github.com/golang/glog"
 	"golang.org/x/net/context"
 
 	"github.com/pilotariak/trinquet/pb"
@@ -23,18 +24,22 @@ import (
 type LeagueService struct {
 }
 
-func newLeagueService() *LeagueService {
+func NewLeagueService() *LeagueService {
+	glog.V(2).Info("Create the League service")
 	return &LeagueService{}
 }
 
-func (ls *LeagueService) GetLeagues(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
+func (ls *LeagueService) List(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
+	glog.Info("[league] List all leagues")
 	return &pb.GetLeaguesResponse{}, nil
 }
 
-func (ls *LeagueService) CreateLeague(context.Context, *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
+func (ls *LeagueService) Create(context.Context, *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
+	glog.Info("[league] Create a new league")
 	return &pb.CreateLeagueResponse{}, nil
 }
 
-func (ls *LeagueService) GetLeague(context.Context, *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
+func (ls *LeagueService) Get(context.Context, *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
+	glog.Info("[league] Retrieve a league")
 	return &pb.GetLeagueResponse{}, nil
 }
