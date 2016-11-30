@@ -23,7 +23,9 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
@@ -38,8 +40,12 @@ const (
 
 func registerServer() *grpc.Server {
 	glog.V(1).Info("Create the gRPC server")
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+	)
 	pb.RegisterLeagueServiceServer(server, api.NewLeagueService())
+	grpc_prometheus.Register(server)
 	return server
 }
 
@@ -138,13 +144,11 @@ func main() {
 	}
 
 	httpmux := http.NewServeMux()
-	// // httpmux.Handle("/", handler)
 	httpmux.Handle("/v1/", gwmux)
+	httpmux.Handle("/metrics", prometheus.Handler())
 	httpmux.HandleFunc("/healthz", api.HealthHandler)
 	httpmux.HandleFunc("/version", api.VersionHandler)
 
-	// logrus.Infof("[trinquet] Listen on %s", addr)
-	// http.ListenAndServe(addr, allowCORS(httpmux))
 	glog.V(0).Infof("Start gRPC server on %s", grpcAddr)
 	go grpcServer.Serve(lis)
 
