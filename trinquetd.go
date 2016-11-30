@@ -27,8 +27,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
+	"github.com/pilotariak/trinquet/api"
 	"github.com/pilotariak/trinquet/pb"
-	"github.com/pilotariak/trinquet/services"
 	"github.com/pilotariak/trinquet/version"
 )
 
@@ -39,7 +39,7 @@ const (
 func registerServer() *grpc.Server {
 	glog.V(1).Info("Create the gRPC server")
 	server := grpc.NewServer()
-	pb.RegisterLeagueServiceServer(server, services.NewLeagueService())
+	pb.RegisterLeagueServiceServer(server, api.NewLeagueService())
 	return server
 }
 
@@ -137,9 +137,11 @@ func main() {
 		glog.Fatalf("Failed to register JSON gateway: %s", err.Error())
 	}
 
-	// httpmux := http.NewServeMux()
+	httpmux := http.NewServeMux()
 	// // httpmux.Handle("/", handler)
-	// httpmux.Handle("/v1/", gwmux)
+	httpmux.Handle("/v1/", gwmux)
+	httpmux.HandleFunc("/healthz", api.HealthHandler)
+	httpmux.HandleFunc("/version", api.VersionHandler)
 
 	// logrus.Infof("[trinquet] Listen on %s", addr)
 	// http.ListenAndServe(addr, allowCORS(httpmux))
@@ -148,7 +150,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf("localhost:%d", 9090),
-		Handler: grpcHandlerFunc(grpcServer, gwmux),
+		Handler: grpcHandlerFunc(grpcServer, httpmux), // gwmux),
 	}
 
 	glog.Fatal(srv.ListenAndServe())

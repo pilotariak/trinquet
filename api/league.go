@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package services
+package api
 
 import (
 	"github.com/golang/glog"
@@ -30,16 +30,16 @@ func NewLeagueService() *LeagueService {
 }
 
 func (ls *LeagueService) List(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
-	glog.Info("[league] List all leagues")
+	glog.V(1).Info("[league] List all leagues")
 	return &pb.GetLeaguesResponse{}, nil
 }
 
 func (ls *LeagueService) Create(context.Context, *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
-	glog.Info("[league] Create a new league")
+	glog.V(1).Info("[league] Create a new league")
 	return &pb.CreateLeagueResponse{}, nil
 }
 
 func (ls *LeagueService) Get(context.Context, *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
-	glog.Info("[league] Retrieve a league")
+	glog.V(1).Info("[league] Retrieve a league")
 	return &pb.GetLeagueResponse{}, nil
 }
