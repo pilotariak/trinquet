@@ -15,20 +15,45 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	"github.com/pilotariak/trinquet/pb"
-)
-
-const (
-	port = "localhost:8080"
+	"github.com/pilotariak/trinquet/version"
 )
 
 func main() {
+
+	var (
+		debug bool
+		vrs   bool
+		uri   string
+	)
+
+	// parse flags
+	flag.BoolVar(&vrs, "version", false, "print version and exit")
+	flag.BoolVar(&debug, "d", false, "run in debug mode")
+	flag.StringVar(&uri, "uri", "localhost:8080", "URI of the server")
+
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, fmt.Sprintf("Trinquet v%s\n", version.Version))
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
+	if vrs {
+		fmt.Printf("%s\n", version.Version)
+		os.Exit(0)
+	}
+
 	// Set up a connection to the gRPC server.
-	conn, err := grpc.Dial(port, grpc.WithInsecure())
+	conn, err := grpc.Dial(uri, grpc.WithInsecure())
 	if err != nil {
 		glog.Fatalf("did not connect: %v", err)
 	}

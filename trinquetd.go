@@ -15,9 +15,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/golang/glog"
@@ -27,6 +29,7 @@ import (
 
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/services"
+	"github.com/pilotariak/trinquet/version"
 )
 
 const (
@@ -34,14 +37,14 @@ const (
 )
 
 func registerServer() *grpc.Server {
-	glog.V(2).Info("[trinquet] Create the gRPC server")
+	glog.V(1).Info("Create the gRPC server")
 	server := grpc.NewServer()
 	pb.RegisterLeagueServiceServer(server, services.NewLeagueService())
 	return server
 }
 
 func registerGateway(ctx context.Context) (*runtime.ServeMux, error) {
-	glog.V(2).Info("[trinquet] Create the REST gateway")
+	glog.V(1).Info("Create the REST gateway")
 	opts := []grpc.DialOption{
 		grpc.WithInsecure(),
 	}
@@ -90,7 +93,32 @@ func preflightHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	glog.Infoln("[trinquet] Create the gRPC servers")
+
+	var (
+		debug    bool
+		vrs      bool
+		grpcPort int
+		gwPort   int
+	)
+	// parse flags
+	flag.BoolVar(&vrs, "version", false, "print version and exit")
+	flag.BoolVar(&debug, "d", false, "run in debug mode")
+	flag.IntVar(&grpcPort, "grpcPort", 8080, "gRPC port to use")
+	flag.IntVar(&gwPort, "gwPort", 8081, "REST gateway port to use")
+
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, fmt.Sprintf("Trinquet v%s\n", version.Version))
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
+	if vrs {
+		fmt.Printf("%s\n", version.Version)
+		os.Exit(0)
+	}
+
+	glog.V(0).Infoln("Create the gRPC servers")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -101,7 +129,7 @@ func main() {
 	if err != nil {
 		glog.Fatalf("failed to listen: %v", err)
 	}
-	glog.Infof("[trinquet] Listen on %s", grpcAddr)
+	glog.V(0).Infof("Listen on %s", grpcAddr)
 
 	grpcServer := registerServer()
 	gwmux, err := registerGateway(ctx)
@@ -115,7 +143,7 @@ func main() {
 
 	// logrus.Infof("[trinquet] Listen on %s", addr)
 	// http.ListenAndServe(addr, allowCORS(httpmux))
-	glog.Infof("[trinquet] Start gRPC server on %s", grpcAddr)
+	glog.V(0).Infof("Start gRPC server on %s", grpcAddr)
 	go grpcServer.Serve(lis)
 
 	srv := &http.Server{
