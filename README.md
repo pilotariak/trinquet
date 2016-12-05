@@ -3,11 +3,10 @@
 [![License Apache 2][badge-license]](LICENSE)
 [![GitHub version](https://badge.fury.io/gh/pilotariak%2Ftrinquet.svg)](https://badge.fury.io/gh/pilotariak%2Ftrinquet)
 
-Master :
-* [![Circle CI](https://circleci.com/gh/pilotariak/trinquet/tree/master.svg?style=svg)](https://circleci.com/gh/pilotariak/trinquet/tree/master)
+* Master : [![Circle CI](https://circleci.com/gh/pilotariak/trinquet/tree/master.svg?style=svg)](https://circleci.com/gh/pilotariak/trinquet/tree/master)
+* Develop : [![Circle CI](https://circleci.com/gh/pilotariak/trinquet/tree/develop.svg?style=svg)](https://circleci.com/gh/pilotariak/trinquet/tree/develop)
 
-Develop :
-* [![Circle CI](https://circleci.com/gh/pilotariak/trinquet/tree/develop.svg?style=svg)](https://circleci.com/gh/pilotariak/trinquet/tree/develop)
+
 
 
 ## Installation
@@ -20,6 +19,13 @@ You can download the binaries :
 
 
 ## Usage
+
+
+*trinquet* uses [gRPC](http://www.grpc.io/) for its messaging protocol. The *trinquet* project includes a gRPC-based Go client and a command line utility, *trinquetctl*, for communicating with a *trinquetd* server.
+
+For languages with no gRPC support, *trinquet* provides a [JSON](http://www.json.org/) grpc-gateway. This gateway serves a RESTful proxy that translates HTTP/JSON requests into gRPC messages.
+
+
 
 
 ## Development
