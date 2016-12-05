@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/golang/glog"
+
 	"github.com/pilotariak/trinquet/version"
 )
 
@@ -26,6 +28,7 @@ type VersionResponse struct {
 }
 
 func VersionHandler(w http.ResponseWriter, r *http.Request) {
+	glog.V(1).Infof("[Version] handler")
 	response := VersionResponse{
 		Version: version.Version,
 	}

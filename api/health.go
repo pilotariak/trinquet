@@ -17,6 +17,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/golang/glog"
 )
 
 // HealthResponse contains current health status.
@@ -25,6 +27,7 @@ type HealthResponse struct {
 }
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
+	glog.V(1).Infof("[Health] handler")
 	response := HealthResponse{
 		Status: "OK",
 	}
