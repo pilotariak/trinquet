@@ -25,6 +25,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	// "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/mwitkow/go-grpc-middleware"
+	// "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -42,7 +45,10 @@ func registerServer() *grpc.Server {
 	glog.V(1).Info("Create the gRPC server")
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		grpc.UnaryInterceptor(
+			grpc_middleware.ChainUnaryServer(
+				grpc_prometheus.UnaryServerInterceptor)),
+		//otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()))),
 	)
 	pb.RegisterLeagueServiceServer(server, api.NewLeagueService())
 	grpc_prometheus.Register(server)
@@ -110,7 +116,7 @@ func main() {
 	flag.BoolVar(&vrs, "version", false, "print version and exit")
 	flag.BoolVar(&debug, "d", false, "run in debug mode")
 	flag.IntVar(&grpcPort, "grpcPort", 8080, "gRPC port to use")
-	flag.IntVar(&gwPort, "gwPort", 8081, "REST gateway port to use")
+	flag.IntVar(&gwPort, "gwPort", 9090, "REST gateway port to use")
 
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf("Trinquet v%s\n", version.Version))
@@ -144,19 +150,28 @@ func main() {
 	}
 
 	httpmux := http.NewServeMux()
+	httpmux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<html>
+             <head><title>Trinquet</title></head>
+             <body>
+             <h1>Trinquet</h1>
+             </body>
+             </html>`))
+	})
 	httpmux.Handle("/v1/", gwmux)
 	httpmux.Handle("/metrics", prometheus.Handler())
 	httpmux.HandleFunc("/healthz", api.HealthHandler)
 	httpmux.HandleFunc("/version", api.VersionHandler)
+	api.ServeSwagger(httpmux)
 
 	glog.V(0).Infof("Start gRPC server on %s", grpcAddr)
 	go grpcServer.Serve(lis)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("localhost:%d", 9090),
+		Addr:    fmt.Sprintf("localhost:%d", gwPort),
 		Handler: grpcHandlerFunc(grpcServer, httpmux), // gwmux),
 	}
-
+	glog.V(0).Infof("Start HTTP server on %d", gwPort)
 	glog.Fatal(srv.ListenAndServe())
 
 }
