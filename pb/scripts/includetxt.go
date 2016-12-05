@@ -15,7 +15,7 @@ func main() {
 	out.Write([]byte("package pb \n\nconst (\n"))
 	for _, f := range fs {
 		if strings.HasSuffix(f.Name(), ".json") {
-			name := strings.TrimPrefix(f.Name(), "league.")
+			name := strings.TrimPrefix(f.Name(), "service.")
 			out.Write([]byte(strings.TrimSuffix(name, ".json") + " = `"))
 			f, _ := os.Open(f.Name())
 			io.Copy(out, f)

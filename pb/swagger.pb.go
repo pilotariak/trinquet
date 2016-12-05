@@ -4,7 +4,7 @@ const (
 swagger = `{
   "swagger": "2.0",
   "info": {
-    "title": "league.proto",
+    "title": "service.proto",
     "version": "version not set"
   },
   "schemes": [
