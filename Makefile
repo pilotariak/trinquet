@@ -61,7 +61,7 @@ help:
 
 clean: ## Cleanup
 	@echo -e "$(OK_COLOR)[$(APP)] Cleanup$(NO_COLOR)"
-	@rm -fr $(APP) $(EXE) $(APP)-*.tar.gz
+	@rm -fr trinquetctl trinquetd *.tar.gz
 
 .PHONY: init
 init: ## Install requirements
@@ -91,6 +91,10 @@ proto: ## Install protocol buffer tools
 .PHONY: pb
 pb: ## Generate Protobuf
 	@go generate pb/api.go
+
+.PHONY: swagger
+swagger: ## Generate Swagger
+	go-bindata-assetfs -pkg swagger third_party/swagger-ui/... && mv bindata_assetfs.go pkg/ui/swagger/
 
 .PHONY: build
 build: ## Make binary
