@@ -33,6 +33,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pilotariak/trinquet/api"
+	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/version"
 )
@@ -61,7 +62,7 @@ func registerGateway(ctx context.Context) (*runtime.ServeMux, error) {
 		grpc.WithInsecure(),
 	}
 	gwmux := runtime.NewServeMux()
-	addr := fmt.Sprintf("localhost:%d", port)
+	addr := fmt.Sprintf(":%d", port)
 	if err := pb.RegisterLeagueServiceHandlerFromEndpoint(ctx, gwmux, addr, opts); err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 	})
 }
 
-// allowCORS allows Cross Origin Resoruce Sharing from any origin.
+// allowCORS allows Cross Origin Resource Sharing from any origin.
 // Don't do this without consideration in production systems.
 func allowCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,16 +108,18 @@ func preflightHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	var (
-		debug    bool
-		vrs      bool
-		grpcPort int
-		gwPort   int
+		debug           bool
+		vrs             bool
+		defaultConfFile string
+		// grpcPort int
+		// gwPort   int
 	)
 	// parse flags
 	flag.BoolVar(&vrs, "version", false, "print version and exit")
 	flag.BoolVar(&debug, "d", false, "run in debug mode")
-	flag.IntVar(&grpcPort, "grpcPort", 8080, "gRPC port to use")
-	flag.IntVar(&gwPort, "gwPort", 9090, "REST gateway port to use")
+	flag.StringVar(&defaultConfFile, "config", "trinquet.toml", "Configuration file to used")
+	// flag.IntVar(&grpcPort, "grpcPort", 8080, "gRPC port to use")
+	// flag.IntVar(&gwPort, "gwPort", 9090, "REST gateway port to use")
 
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf("Trinquet v%s\n", version.Version))
@@ -130,13 +133,19 @@ func main() {
 		os.Exit(0)
 	}
 
+	conf, err := config.LoadFileConfig(defaultConfFile)
+	if err != nil {
+		glog.Fatalf("failed to load configuration: %v", err)
+		os.Exit(1)
+	}
+
 	glog.V(0).Infoln("Create the gRPC servers")
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	grpcAddr := fmt.Sprintf(":%d", port)
+	grpcAddr := fmt.Sprintf(":%d", conf.API.GrpcPort)
 	lis, err := net.Listen("tcp", grpcAddr)
 	if err != nil {
 		glog.Fatalf("failed to listen: %v", err)
@@ -168,10 +177,10 @@ func main() {
 	go grpcServer.Serve(lis)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("localhost:%d", gwPort),
+		Addr:    fmt.Sprintf(":%d", conf.API.RestPort),
 		Handler: grpcHandlerFunc(grpcServer, httpmux), // gwmux),
 	}
-	glog.V(0).Infof("Start HTTP server on %d", gwPort)
+	glog.V(0).Infof("Start HTTP server on %d", conf.API.RestPort)
 	glog.Fatal(srv.ListenAndServe())
 
 }

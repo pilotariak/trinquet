@@ -1,0 +1,12 @@
+# Trinquet configuration file
+
+# Storage backend
+backend = "boltdb"
+
+[api]
+grpcPort = 8080
+restPort = 9090
+
+[boltdb]
+file = "/tmp/ut.db"
+bucket = "trinquet"
