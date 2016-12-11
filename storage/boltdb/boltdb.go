@@ -16,11 +16,11 @@ package boltdb
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 
 	"github.com/boltdb/bolt"
+	"github.com/golang/glog"
 
 	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/storage"
@@ -49,7 +49,7 @@ func NewBoltDB(conf *config.Configuration) (storage.Backend, error) {
 	f := conf.BoltDB.File
 	directory := path.Dir(f)
 	if _, err := os.Stat(directory); os.IsNotExist(err) {
-		log.Printf("Create %s", directory)
+		glog.V(1).Infof("Create %s", directory)
 		err = os.Mkdir(directory, 0755)
 		if err != nil {
 			return nil, err
@@ -86,19 +86,21 @@ func (db *BoltDB) Create() error {
 // Destroy remove the storage backend bucket
 func (db *BoltDB) Destroy() error {
 	directory := path.Dir(db.BucketName)
-	log.Printf("Create %s", directory)
+	glog.V(1).Infof("Create %s", directory)
 	return nil
 }
 
 // List returns all secrets
 func (db *BoltDB) List() ([]string, error) {
-	log.Printf("[DEBUG] BoltDB list secrets")
+	glog.V(1).Infof("List entries")
 	var l []string
 	db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(db.BucketName))
 		b.ForEach(func(key, value []byte) error {
-			//log.Println(string(key), string(value))
-			l = append(l, string(key))
+			keyData := string(key)
+			valueData := string(value)
+			glog.V(2).Infof("Entry: %s %s", keyData, valueData)
+			l = append(l, keyData)
 			return nil
 		})
 		return nil
@@ -108,14 +110,14 @@ func (db *BoltDB) List() ([]string, error) {
 
 // Get a value given its key
 func (db *BoltDB) Get(key []byte) ([]byte, error) {
-	log.Printf("[DEBUG] BoltDB Search entry with key : %v", string(key))
+	glog.V(1).Infof("Search entry with key : %v", string(key))
 	var value []byte
 	db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(db.BucketName))
 		b.ForEach(func(k, v []byte) error {
 			//log.Printf("[BoltDB] Entry : %s %s", string(k), string(v))
 			if string(k) == string(key) {
-				//log.Printf("[DEBUG] Find : %s", string(v))
+				glog.V(1).Infof("Find : %s", string(v))
 				value = v
 				return nil
 			}
@@ -128,7 +130,7 @@ func (db *BoltDB) Get(key []byte) ([]byte, error) {
 
 // Put a value at the specified key
 func (db *BoltDB) Put(key []byte, value []byte) error {
-	log.Printf("[DEBUG] BoltDB Put : %v %v", string(key), string(value))
+	glog.V(1).Infof("Put : %v %v", string(key), string(value))
 	return db.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(db.BucketName))
 		b.Put(key, value)
@@ -138,6 +140,6 @@ func (db *BoltDB) Put(key []byte, value []byte) error {
 
 // Delete the value at the specified key
 func (db *BoltDB) Delete(key []byte) error {
-	log.Printf("[DEBUG] BoltDB Delete : %v", string(key))
+	glog.V(1).Infof("Delete : %v", string(key))
 	return fmt.Errorf("Not implemented")
 }

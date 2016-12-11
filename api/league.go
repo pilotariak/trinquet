@@ -33,33 +33,27 @@ func NewLeagueService(backend storage.Backend) *LeagueService {
 	}
 }
 
-func (ls *LeagueService) List(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
+func (ls *LeagueService) List(context context.Context, request *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
 	glog.V(1).Info("[league] List all leagues")
 	theleagues, err := storage.ListAll(ls.Backend)
 	if err != nil {
 		return nil, err
 	}
-
-	// availablesLeagues := leagues.ListLeagues()
-	// size := len(availablesLeagues)
-	// glog.V(1).Infof("[league] Available leagues : %d", size)
-	// theleagues := make([]*pb.League, size)
-	// for i, name := range availablesLeagues {
-	// 	glog.V(2).Infof("[league] %s", name)
-	// 	theleagues[i] = &pb.League{
-	// 		Name:    name,
-	// 		Website: ""}
-	// }
-	// glog.V(1).Infof("[league] Response: %d %s", len(theleagues), theleagues)
 	return &pb.GetLeaguesResponse{Leagues: theleagues}, nil
 }
 
-func (ls *LeagueService) Create(context.Context, *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
+func (ls *LeagueService) Create(context context.Context, request *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
 	glog.V(1).Info("[league] Create a new league")
 	return &pb.CreateLeagueResponse{}, nil
 }
 
-func (ls *LeagueService) Get(context.Context, *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
+func (ls *LeagueService) Get(context context.Context, request *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
 	glog.V(1).Info("[league] Retrieve a league")
-	return &pb.GetLeagueResponse{}, nil
+	league, err := storage.RetrieveLeague(ls.Backend, request.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetLeagueResponse{
+		League: league,
+	}, nil
 }
