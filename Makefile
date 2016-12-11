@@ -101,7 +101,7 @@ build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
 #	@$(GO) build github.com/pilotariak/trinquet
 	@$(GO) build -o trinquetd trinquetd.go
-	@$(GO) build -o trinquetctl trinquetctl.go
+	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
 
 .PHONY: test
 test: ## Launch unit tests
