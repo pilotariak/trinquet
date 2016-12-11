@@ -99,8 +99,7 @@ swagger: ## Generate Swagger
 .PHONY: build
 build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-#	@$(GO) build github.com/pilotariak/trinquet
-	@$(GO) build -o trinquetd trinquetd.go
+	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
 	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
 
 .PHONY: test
