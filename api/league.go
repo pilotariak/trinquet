@@ -18,6 +18,13 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 
+	"github.com/pilotariak/paleta/leagues"
+	_ "github.com/pilotariak/paleta/leagues/ctpb"
+	_ "github.com/pilotariak/paleta/leagues/ffpb"
+	_ "github.com/pilotariak/paleta/leagues/lbpb"
+	_ "github.com/pilotariak/paleta/leagues/lcapb"
+	_ "github.com/pilotariak/paleta/leagues/lidfpb"
+
 	"github.com/pilotariak/trinquet/pb"
 )
 
@@ -31,7 +38,18 @@ func NewLeagueService() *LeagueService {
 
 func (ls *LeagueService) List(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
 	glog.V(1).Info("[league] List all leagues")
-	return &pb.GetLeaguesResponse{}, nil
+	availablesLeagues := leagues.ListLeagues()
+	size := len(availablesLeagues)
+	glog.V(1).Infof("[league] Available leagues : %d", size)
+	theleagues := make([]*pb.League, size)
+	for i, name := range availablesLeagues {
+		glog.V(2).Infof("[league] %s", name)
+		theleagues[i] = &pb.League{
+			Name:    name,
+			Website: ""}
+	}
+	glog.V(1).Infof("[league] Response: %d %s", len(theleagues), theleagues)
+	return &pb.GetLeaguesResponse{Leagues: theleagues}, nil
 }
 
 func (ls *LeagueService) Create(context.Context, *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {

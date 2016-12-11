@@ -32,9 +32,12 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
+	"github.com/pilotariak/paleta/leagues"
 	"github.com/pilotariak/trinquet/api"
 	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/pb"
+	"github.com/pilotariak/trinquet/storage"
+	_ "github.com/pilotariak/trinquet/storage/boltdb"
 	"github.com/pilotariak/trinquet/version"
 )
 
@@ -105,6 +108,60 @@ func preflightHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func getStorage(conf *config.Configuration) (storage.Backend, error) {
+	glog.V(0).Infof("Create the backend using: %s", conf.Backend)
+	db, err := storage.New(conf)
+	if err != nil {
+		return nil, err
+	}
+	err = db.Create()
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func initializePelotaDatabase(db storage.Backend) {
+	glog.V(1).Infof("Initialize database")
+	availablesLeagues := leagues.ListLeagues()
+	for _, name := range availablesLeagues {
+		glog.V(2).Infof("[league] %s", name)
+		leagueInfo, err := leagues.New(name)
+		if err != nil {
+			glog.Errorf("Can't retrieve league: %s", name)
+			break
+		}
+		leagueLevels := leagueInfo.Levels()
+		var levels []*storage.Level
+		for k, v := range leagueLevels {
+			glog.V(2).Infof("For league %s add level %s %s", name, k, v)
+			levels = append(levels, &storage.Level{
+				ID:    k,
+				Title: v,
+			})
+		}
+		leagueDisciplines := leagueInfo.Disciplines()
+		var disciplines []*storage.Discipline
+		for k, v := range leagueDisciplines {
+			glog.V(2).Infof("For league %s add discipline %s %s", name, k, v)
+			disciplines = append(disciplines, &storage.Discipline{
+				ID:    k,
+				Title: v,
+			})
+		}
+		league := &storage.League{
+			Name: name,
+			Details: &storage.LeagueDetails{
+				Website: "",
+			},
+			Levels:      levels,
+			Disciplines: disciplines,
+		}
+		glog.V(2).Infof("Save League: %s", league)
+		storage.StoreLeague(db, league)
+	}
+}
+
 func main() {
 
 	var (
@@ -136,8 +193,13 @@ func main() {
 	conf, err := config.LoadFileConfig(defaultConfFile)
 	if err != nil {
 		glog.Fatalf("failed to load configuration: %v", err)
-		os.Exit(1)
 	}
+	db, err := getStorage(conf)
+	if err != nil {
+		glog.Fatalf("failed to load configuration: %v", err)
+	}
+	glog.V(1).Infof("Backend used: %s", db.Name())
+	initializePelotaDatabase(db)
 
 	glog.V(0).Infoln("Create the gRPC servers")
 
