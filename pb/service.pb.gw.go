@@ -206,7 +206,7 @@ var (
 
 	pattern_LeagueService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "leagues"}, ""))
 
-	pattern_LeagueService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "leages", "name"}, ""))
+	pattern_LeagueService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "leagues", "name"}, ""))
 )
 
 var (

@@ -95,7 +95,7 @@ service LeagueService {
   // Get return a league
   rpc Get(GetLeagueRequest) returns (GetLeagueResponse) {
     option (google.api.http) = {
-      get: "/v1/leages/{name}"
+      get: "/v1/leagues/{name}"
     };
   }
 
