@@ -23,36 +23,50 @@ import (
 	"github.com/pilotariak/trinquet/pb"
 )
 
-// NewCmdLeagues returns "trinquetctl leagues" command.
-func NewCmdLeagues() *cobra.Command {
+var (
+	leagueName string
+)
+
+// NewCmdLeague returns "trinquetctl league" command.
+func NewCmdLeague() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "leagues",
-		Short: "Print the available leagues",
+		Use:   "league",
+		Short: "Print information about a league",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			printAvailableLeagues()
+			printLeagueDescription()
 			return nil
 		},
 	}
 
 	cmd.PersistentFlags().StringVar(&httpAddress, "httpAddress", "127.0.0.1:8080", "Http address of the gRPC server")
+	cmd.PersistentFlags().StringVar(&leagueName, "name", "", "Name of the league")
 
 	return cmd
 }
 
-func printAvailableLeagues() {
+func printLeagueDescription() {
+	if len(leagueName) == 0 {
+		fmt.Println(redOut("League name can't be empty"))
+		return
+	}
 	client, err := getClient(httpAddress)
 	if err != nil {
 		fmt.Println(redOut(err))
 		return
 	}
-	fmt.Println(greenOut("Availables leagues:"))
-	resp, err := client.List(context.Background(), &pb.GetLeaguesRequest{})
+	resp, err := client.Get(context.Background(), &pb.GetLeagueRequest{
+		Name: leagueName,
+	})
 	if err != nil {
 		fmt.Println(redOut(err))
 		return
 	}
-	for _, league := range resp.Leagues {
-		fmt.Printf("- %s\n", league.Name)
+	fmt.Printf(greenOut("Levels:\n"))
+	for _, level := range resp.League.Levels {
+		fmt.Printf("- %s\n", level.Title)
 	}
-
+	fmt.Printf(greenOut("Disciplines:\n"))
+	for _, discipline := range resp.League.Disciplines {
+		fmt.Printf("- %s\n", discipline.Title)
+	}
 }

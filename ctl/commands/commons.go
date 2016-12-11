@@ -25,6 +25,8 @@ var (
 	greenOut  = color.New(color.FgGreen).SprintFunc()
 	yellowOut = color.New(color.FgYellow).SprintFunc()
 	redOut    = color.New(color.FgRed).SprintFunc()
+
+	httpAddress string
 )
 
 func getClient(uri string) (pb.LeagueServiceClient, error) {

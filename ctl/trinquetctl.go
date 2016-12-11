@@ -35,13 +35,9 @@ var (
 )
 
 func init() {
-	// TrinquetctlCmd.Flags().BoolVarP(&version, "version", "v", version, "Print version info and exit")
-	// TrinquetctlCmd.Flags().StringP("http-address", "H", httpAddress, "Http address of the gRPC server")
-
 	// TrinquetctlCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	// TrinquetctlCmd.PersistentFlags().BoolVar(&logging, "log", false, "Enable Logging")
 	// TrinquetctlCmd.PersistentFlags().StringVar(&logFile, "logFile", "", "Log File path (if set, logging enabled automatically)")
-
 }
 
 func main() {
@@ -55,51 +51,5 @@ func main() {
 func addCommands() {
 	TrinquetctlCmd.AddCommand(commands.VersionCmd)
 	TrinquetctlCmd.AddCommand(commands.NewCmdLeagues())
+	TrinquetctlCmd.AddCommand(commands.NewCmdLeague())
 }
-
-// func main() {
-
-// 	var (
-// 		debug bool
-// 		vrs   bool
-// 		uri   string
-// 	)
-
-// 	// parse flags
-// 	flag.BoolVar(&vrs, "version", false, "print version and exit")
-// 	flag.BoolVar(&debug, "d", false, "run in debug mode")
-// 	flag.StringVar(&uri, "uri", "localhost:8080", "URI of the server")
-
-// 	flag.Usage = func() {
-// 		fmt.Fprint(os.Stderr, fmt.Sprintf("Trinquet v%s\n", version.Version))
-// 		flag.PrintDefaults()
-// 	}
-
-// 	flag.Parse()
-
-// 	if vrs {
-// 		fmt.Printf("%s\n", version.Version)
-// 		os.Exit(0)
-// 	}
-
-// 	// Set up a connection to the gRPC server.
-// 	conn, err := grpc.Dial(uri, grpc.WithInsecure())
-// 	if err != nil {
-// 		glog.Fatalf("did not connect: %v", err)
-// 	}
-// 	defer conn.Close()
-
-// 	client := pb.NewLeagueServiceClient(conn)
-// 	glog.Infoln("[trinquet] Retrieve all leagues")
-// 	fmt.Println(greenOut("Availables leagues:"))
-// 	resp, err := client.List(context.Background(), &pb.GetLeaguesRequest{})
-// 	if err != nil {
-// 		glog.Fatalf("[trinquet] Could not retrieve leagues: %v", err)
-// 		fmt.Println(redOut(fmt.Sprintf("Could not retrieve leagues: %v", err.Error())))
-// 		os.Exit(0)
-// 	}
-// 	glog.Infof("[trinquet] Available leagues: %s", resp)
-// 	for _, league := range resp.Leagues {
-// 		fmt.Printf("- %s\n", league.Name)
-// 	}
-// }
