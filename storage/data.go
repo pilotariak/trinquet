@@ -14,27 +14,27 @@
 
 package storage
 
-type LeagueDetails struct {
-	Website     string `json:"website"`
-	Address     string `json:"address"`
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phonenumber"`
-	Fax         string `json:"fax"`
-}
+// type LeagueDetails struct {
+// 	Website     string `json:"website"`
+// 	Address     string `json:"address"`
+// 	Email       string `json:"email"`
+// 	PhoneNumber string `json:"phonenumber"`
+// 	Fax         string `json:"fax"`
+// }
 
-type Discipline struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-}
+// type Discipline struct {
+// 	ID    string `json:"id"`
+// 	Title string `json:"title"`
+// }
 
-type Level struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-}
+// type Level struct {
+// 	ID    string `json:"id"`
+// 	Title string `json:"title"`
+// }
 
-type League struct {
-	Name        string         `json:"name"`
-	Details     *LeagueDetails `json:"details"`
-	Disciplines []*Discipline  `json:"disciplines"`
-	Levels      []*Level       `json:"levels"`
-}
+// type League struct {
+// 	Name        string         `json:"name"`
+// 	Details     *LeagueDetails `json:"details"`
+// 	Disciplines []*Discipline  `json:"disciplines"`
+// 	Levels      []*Level       `json:"levels"`
+// }

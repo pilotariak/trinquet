@@ -110,6 +110,44 @@
         }
       }
     },
+    "pbDetails": {
+      "type": "object",
+      "properties": {
+        "website": {
+          "type": "string",
+          "format": "string"
+        },
+        "address": {
+          "type": "string",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "string"
+        },
+        "phonenumber": {
+          "type": "string",
+          "format": "string"
+        },
+        "fax": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "pbDiscipline": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "string"
+        },
+        "title": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
     "pbGetLeagueRequest": {
       "type": "object",
       "properties": {
@@ -154,12 +192,36 @@
           "type": "string",
           "format": "string"
         },
-        "website": {
-          "type": "string",
-          "format": "string"
+        "details": {
+          "$ref": "#/definitions/pbDetails"
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbLevel"
+          }
+        },
+        "disciplines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbDiscipline"
+          }
         }
       },
       "title": "League define a pelota league"
+    },
+    "pbLevel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "string"
+        },
+        "title": {
+          "type": "string",
+          "format": "string"
+        }
+      }
     }
   }
 }

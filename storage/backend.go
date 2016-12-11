@@ -20,6 +20,7 @@ import (
 	"sort"
 
 	"github.com/pilotariak/trinquet/config"
+	"github.com/pilotariak/trinquet/pb"
 )
 
 // Backend represents a storage backend
@@ -73,11 +74,40 @@ func GetBackends() []string {
 	return backends
 }
 
-func StoreLeague(backend Backend, league *League) error {
+func StoreLeague(backend Backend, league *pb.League) error {
 	data, err := json.Marshal(league)
 	if err != nil {
 		return err
 	}
 	return backend.Put([]byte(league.Name), data)
 
+}
+
+func RetrieveLeague(backend Backend, name string) (*pb.League, error) {
+	data, err := backend.Get([]byte(name))
+	if err != nil {
+		return nil, err
+	}
+	var league *pb.League
+	err = json.Unmarshal(data, &league)
+	if err != nil {
+		return nil, err
+	}
+	return league, nil
+}
+
+func ListAll(backend Backend) ([]*pb.League, error) {
+	names, err := backend.List()
+	if err != nil {
+		return nil, err
+	}
+	var allleagues []*pb.League
+	for _, name := range names {
+		league, err := RetrieveLeague(backend, name)
+		if err != nil {
+			return nil, err
+		}
+		allleagues = append(allleagues, league)
+	}
+	return allleagues, nil
 }

@@ -33,6 +33,11 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pilotariak/paleta/leagues"
+	_ "github.com/pilotariak/paleta/leagues/ctpb"
+	_ "github.com/pilotariak/paleta/leagues/ffpb"
+	_ "github.com/pilotariak/paleta/leagues/lbpb"
+	_ "github.com/pilotariak/paleta/leagues/lcapb"
+	_ "github.com/pilotariak/paleta/leagues/lidfpb"
 	"github.com/pilotariak/trinquet/api"
 	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/pb"
@@ -45,7 +50,7 @@ const (
 	port = 8080
 )
 
-func registerServer() *grpc.Server {
+func registerServer(backend storage.Backend) *grpc.Server {
 	glog.V(1).Info("Create the gRPC server")
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
@@ -54,7 +59,7 @@ func registerServer() *grpc.Server {
 				grpc_prometheus.UnaryServerInterceptor)),
 		//otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()))),
 	)
-	pb.RegisterLeagueServiceServer(server, api.NewLeagueService())
+	pb.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
 	grpc_prometheus.Register(server)
 	return server
 }
@@ -132,26 +137,26 @@ func initializePelotaDatabase(db storage.Backend) {
 			break
 		}
 		leagueLevels := leagueInfo.Levels()
-		var levels []*storage.Level
+		var levels []*pb.Level
 		for k, v := range leagueLevels {
 			glog.V(2).Infof("For league %s add level %s %s", name, k, v)
-			levels = append(levels, &storage.Level{
-				ID:    k,
+			levels = append(levels, &pb.Level{
+				Id:    k,
 				Title: v,
 			})
 		}
 		leagueDisciplines := leagueInfo.Disciplines()
-		var disciplines []*storage.Discipline
+		var disciplines []*pb.Discipline
 		for k, v := range leagueDisciplines {
 			glog.V(2).Infof("For league %s add discipline %s %s", name, k, v)
-			disciplines = append(disciplines, &storage.Discipline{
-				ID:    k,
+			disciplines = append(disciplines, &pb.Discipline{
+				Id:    k,
 				Title: v,
 			})
 		}
-		league := &storage.League{
+		league := &pb.League{
 			Name: name,
-			Details: &storage.LeagueDetails{
+			Details: &pb.Details{
 				Website: "",
 			},
 			Levels:      levels,
@@ -214,7 +219,7 @@ func main() {
 	}
 	glog.V(0).Infof("Listen on %s", grpcAddr)
 
-	grpcServer := registerServer()
+	grpcServer := registerServer(db)
 	gwmux, err := registerGateway(ctx)
 	if err != nil {
 		glog.Fatalf("Failed to register JSON gateway: %s", err.Error())

@@ -18,37 +18,39 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 
-	"github.com/pilotariak/paleta/leagues"
-	_ "github.com/pilotariak/paleta/leagues/ctpb"
-	_ "github.com/pilotariak/paleta/leagues/ffpb"
-	_ "github.com/pilotariak/paleta/leagues/lbpb"
-	_ "github.com/pilotariak/paleta/leagues/lcapb"
-	_ "github.com/pilotariak/paleta/leagues/lidfpb"
-
 	"github.com/pilotariak/trinquet/pb"
+	"github.com/pilotariak/trinquet/storage"
 )
 
 type LeagueService struct {
+	Backend storage.Backend
 }
 
-func NewLeagueService() *LeagueService {
-	glog.V(2).Info("Create the League service")
-	return &LeagueService{}
+func NewLeagueService(backend storage.Backend) *LeagueService {
+	glog.V(2).Infof("Create the League service using %v", backend)
+	return &LeagueService{
+		Backend: backend,
+	}
 }
 
 func (ls *LeagueService) List(context.Context, *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
 	glog.V(1).Info("[league] List all leagues")
-	availablesLeagues := leagues.ListLeagues()
-	size := len(availablesLeagues)
-	glog.V(1).Infof("[league] Available leagues : %d", size)
-	theleagues := make([]*pb.League, size)
-	for i, name := range availablesLeagues {
-		glog.V(2).Infof("[league] %s", name)
-		theleagues[i] = &pb.League{
-			Name:    name,
-			Website: ""}
+	theleagues, err := storage.ListAll(ls.Backend)
+	if err != nil {
+		return nil, err
 	}
-	glog.V(1).Infof("[league] Response: %d %s", len(theleagues), theleagues)
+
+	// availablesLeagues := leagues.ListLeagues()
+	// size := len(availablesLeagues)
+	// glog.V(1).Infof("[league] Available leagues : %d", size)
+	// theleagues := make([]*pb.League, size)
+	// for i, name := range availablesLeagues {
+	// 	glog.V(2).Infof("[league] %s", name)
+	// 	theleagues[i] = &pb.League{
+	// 		Name:    name,
+	// 		Website: ""}
+	// }
+	// glog.V(1).Infof("[league] Response: %d %s", len(theleagues), theleagues)
 	return &pb.GetLeaguesResponse{Leagues: theleagues}, nil
 }
 
