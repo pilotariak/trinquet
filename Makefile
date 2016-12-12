@@ -79,7 +79,6 @@ deps: ## Install dependencies
 	@echo -e "$(OK_COLOR)[$(APP)] Update dependencies$(NO_COLOR)"
 	@govendor update
 
-
 .PHONY: proto
 proto: ## Install protocol buffer tools
 	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
@@ -98,8 +97,10 @@ swagger: ## Generate Swagger
 .PHONY: build
 build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
-	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
+#	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
+#	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
+	@$(GO) build -o trinquetctl ./ctl/
+	@$(GO) build -o trinquetd ./server
 
 .PHONY: test
 test: ## Launch unit tests
