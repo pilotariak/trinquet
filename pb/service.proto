@@ -19,14 +19,6 @@ package pb;
 // for grpc-gateway
 import "google/api/annotations.proto";
 
-message Details {
-  string website = 1;
-  string address = 2;
-  string email = 3;
-  string phonenumber = 4;
-  string fax = 5;
-}
-
 message Discipline {
   string id = 1;
   string title = 2;
@@ -40,7 +32,7 @@ message Level {
 // League define a pelota league
 message League {
   string name = 1;
-  Details details = 2;
+  map<string, string> details = 2;
   repeated Level levels = 3;
   repeated Discipline disciplines = 4;
 }
