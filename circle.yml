@@ -16,7 +16,7 @@ test:
     - go version
   override:
     - make build
-    - make test
+    # - make test
     - make lint
     - make vet
     - make coverage
