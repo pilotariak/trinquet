@@ -71,7 +71,6 @@ init: ## Install requirements
 	@go get -u github.com/Masterminds/rmvcsdir
 	@go get -u github.com/golang/lint/golint
 	@go get -u github.com/kisielk/errcheck
-	@go get -u golang.org/x/tools/cmd/oracle
 	@go get -u github.com/mitchellh/gox
 	@wget https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
 
