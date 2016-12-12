@@ -15,6 +15,9 @@ test:
   pre:
     - go version
     - echo `pwd`
+    - mkdir -p /home/ubuntu/.go_workspace/src/github.com/pilotariak/
+    - cd /home/ubuntu/.go_workspace/src/github.com/pilotariak/ && ln -s /home/ubuntu/trinquet .
+    - cd
   override:
     - make build
     # - make test
