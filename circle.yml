@@ -14,6 +14,7 @@ dependencies:
 test:
   pre:
     - go version
+    - echo `pwd`
   override:
     - make build
     # - make test
