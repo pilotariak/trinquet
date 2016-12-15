@@ -18,12 +18,34 @@ You can download the binaries :
 * Architecture arm [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.8.0_linux_arm) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.8.0_freebsd_arm) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.8.0_netbsd_arm) ]
 
 
-## Usage
-
-
 *trinquet* uses [gRPC](http://www.grpc.io/) for its messaging protocol. The *trinquet* project includes a gRPC-based Go client and a command line utility, *trinquetctl*, for communicating with the *trinquetd* server.
 
 For languages with no gRPC support, *trinquet* provides a [JSON](http://www.json.org/) grpc-gateway. This gateway serves a RESTful proxy that translates HTTP/JSON requests into gRPC messages.
+
+
+## Usage
+
+Launch the *trinquetd* server:
+
+    $ ./trinquetd -v 2 -logtostderr
+
+Use the *trinquetctl* CLI to manage pelota informations :
+
+    $ Trinquetctl is a CLI to use the Trinquet server
+
+    Usage:
+    trinquetctl [command]
+
+    Available Commands:
+        league      Print information about a league
+        leagues     Print the available leagues
+        version     Print the version number of Trinquetctl
+
+    Use "trinquetctl [command] --help" for more information about a command.
+
+You could explore the API using [Swagger](http://swagger.io/) UI : 
+
+    http://localhost:9090/swagger-ui/
 
 
 ## Development

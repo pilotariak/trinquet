@@ -154,11 +154,13 @@ func initializePelotaDatabase(db storage.Backend) {
 				Title: v,
 			})
 		}
+		details := map[string]string{}
+		for k, v := range leagueInfo.Details() {
+			details[k] = v
+		}
 		league := &pb.League{
-			Name: name,
-			Details: &pb.Details{
-				Website: "",
-			},
+			Name:        name,
+			Details:     details,
 			Levels:      levels,
 			Disciplines: disciplines,
 		}

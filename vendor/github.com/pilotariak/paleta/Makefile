@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-APP = trinquet
+APP = paleta
 
 VERSION=$(shell \
         grep "const Version" version/version.go \
@@ -44,10 +44,10 @@ WARN_COLOR=\033[33;01m
 
 MAKE_COLOR=\033[33;01m%-20s\033[0m
 
-MAIN = github.com/pilotariak/trinquet
+MAIN = github.com/pilotariak/paleta
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 PKGS = $(shell glide novendor)
-EXE = $(shell ls trinquet-*_*)
+EXE = $(shell ls paleta-*_*)
 
 PACKAGE=$(APP)-$(VERSION)
 ARCHIVE=$(PACKAGE).tar
@@ -61,7 +61,7 @@ help:
 
 clean: ## Cleanup
 	@echo -e "$(OK_COLOR)[$(APP)] Cleanup$(NO_COLOR)"
-	@rm -fr trinquetctl trinquetd *.tar.gz
+	@rm -fr $(APP) $(EXE) $(APP)-*.tar.gz
 
 .PHONY: init
 init: ## Install requirements
@@ -72,35 +72,16 @@ init: ## Install requirements
 	@go get -u github.com/golang/lint/golint
 	@go get -u github.com/kisielk/errcheck
 	@go get -u github.com/mitchellh/gox
-	@wget https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
 
 .PHONY: deps
 deps: ## Install dependencies
 	@echo -e "$(OK_COLOR)[$(APP)] Update dependencies$(NO_COLOR)"
 	@govendor update
 
-.PHONY: proto
-proto: ## Install protocol buffer tools
-	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-	@govendor fetch github.com/golang/protobuf/protoc-gen-go
-	@govendor fetch google.golang.org/grpc
-
-.PHONY: pb
-pb: ## Generate Protobuf
-	@go generate pb/api.go
-
-.PHONY: swagger
-swagger: ## Generate Swagger
-	go-bindata-assetfs -pkg swagger third_party/swagger-ui/... && mv bindata_assetfs.go pkg/ui/swagger/
-
 .PHONY: build
 build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
-	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
-#	@$(GO) build -o trinquetctl ./ctl/
-#	@$(GO) build -o trinquetd ./server
+	@$(GO) build .
 
 .PHONY: test
 test: ## Launch unit tests
@@ -126,7 +107,7 @@ coverage: ## Launch code coverage
 
 gox: ## Make all binaries
 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
-	$(GOX) $(GOX_ARGS) github.com/pilotariak/trinquet/
+	$(GOX) $(GOX_ARGS) github.com/nlamirault/helmsman
 
 .PHONY: binaries
 binaries: ## Upload all binaries

@@ -113,31 +113,6 @@ swagger = `{
         }
       }
     },
-    "pbDetails": {
-      "type": "object",
-      "properties": {
-        "website": {
-          "type": "string",
-          "format": "string"
-        },
-        "address": {
-          "type": "string",
-          "format": "string"
-        },
-        "email": {
-          "type": "string",
-          "format": "string"
-        },
-        "phonenumber": {
-          "type": "string",
-          "format": "string"
-        },
-        "fax": {
-          "type": "string",
-          "format": "string"
-        }
-      }
-    },
     "pbDiscipline": {
       "type": "object",
       "properties": {
@@ -196,7 +171,11 @@ swagger = `{
           "format": "string"
         },
         "details": {
-          "$ref": "#/definitions/pbDetails"
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "string"
+          }
         },
         "levels": {
           "type": "array",
