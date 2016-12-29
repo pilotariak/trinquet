@@ -6,14 +6,6 @@
 * Master : [![Circle CI](https://circleci.com/gh/pilotariak/trinquet/tree/master.svg?style=svg)](https://circleci.com/gh/pilotariak/trinquet/tree/master)
 * Develop : [![Circle CI](https://circleci.com/gh/pilotariak/trinquet/tree/develop.svg?style=svg)](https://circleci.com/gh/pilotariak/trinquet/tree/develop)
 
-## Installation
-
-You can download the binaries :
-
-* Architecture i386 [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_linux_386) / [darwin](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_darwin_386) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_freebsd_386) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_netbsd_386) / [openbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_openbsd_386) / [windows](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_windows_386.exe) ]
-* Architecture amd64 [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_linux_amd64) / [darwin](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_darwin_amd64) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_freebsd_amd64) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_netbsd_amd64) / [openbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_openbsd_amd64) / [windows](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_windows_amd64.exe) ]
-* Architecture arm [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_linux_arm) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_freebsd_arm) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_netbsd_arm) ]
-
 
 *trinquet* uses [gRPC](http://www.grpc.io/) for its messaging protocol. The *trinquet* project includes a gRPC-based Go client and a command line utility, *trinquetctl*, for communicating with the *trinquetd* server.
 
@@ -23,6 +15,15 @@ It exports metrics for [Prometheus](https://prometheus.io/)
 
 Distributed tracing is available using [OpenTracing](http://opentracing.io/). Supported tracers are:
 * [x] [Zipkin](https://github.com/openzipkin)
+
+
+## Installation
+
+You can download the binaries :
+
+* Architecture i386 [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_linux_386) / [darwin](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_darwin_386) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_freebsd_386) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_netbsd_386) / [openbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_openbsd_386) / [windows](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_windows_386.exe) ]
+* Architecture amd64 [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_linux_amd64) / [darwin](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_darwin_amd64) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_freebsd_amd64) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_netbsd_amd64) / [openbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_openbsd_amd64) / [windows](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_windows_amd64.exe) ]
+* Architecture arm [ [linux](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_linux_arm) / [freebsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_freebsd_arm) / [netbsd](https://bintray.com/artifact/download/pilotariak/oss/trinquet-0.2.0_netbsd_arm) ]
 
 ## Usage
 
