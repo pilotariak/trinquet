@@ -85,6 +85,12 @@
 			"revisionTime": "2016-11-15T14:25:13Z"
 		},
 		{
+			"checksumSHA1": "zhx1Xq4O4dzg+QbBIIxyVo3QQig=",
+			"path": "github.com/gogo/protobuf/io",
+			"revision": "84af2615df1ba1d35cc975ba94b64ee67d6c196e",
+			"revisionTime": "2016-12-20T17:02:12Z"
+		},
+		{
 			"checksumSHA1": "6ZxSmrIx3Jd15aou16oG0HPylP4=",
 			"path": "github.com/gogo/protobuf/proto",
 			"revision": "84af2615df1ba1d35cc975ba94b64ee67d6c196e",
@@ -275,6 +281,18 @@
 			"path": "github.com/olekukonko/tablewriter",
 			"revision": "bdcc175572fd7abece6c831e643891b9331bc9e7",
 			"revisionTime": "2016-09-23T12:54:01Z"
+		},
+		{
+			"checksumSHA1": "HxZk1VWHKzU4xdyhe0Jvu7UOwjM=",
+			"path": "github.com/opentracing/basictracer-go",
+			"revision": "1b32af207119a14b1b231d451df3ed04a72efebf",
+			"revisionTime": "2016-09-29T22:04:58Z"
+		},
+		{
+			"checksumSHA1": "bvLGShW2gTFyRs7kHShIczVuR1c=",
+			"path": "github.com/opentracing/basictracer-go/wire",
+			"revision": "1b32af207119a14b1b231d451df3ed04a72efebf",
+			"revisionTime": "2016-09-29T22:04:58Z"
 		},
 		{
 			"checksumSHA1": "BPZnFZkaYGwSka4Te4x6uDuwJjo=",
@@ -567,6 +585,24 @@
 		{
 			"path": "net/http/httptrace",
 			"revision": ""
+		},
+		{
+			"checksumSHA1": "Xbgb6h7GNgb5Y1lTgAmKh8O2i9U=",
+			"path": "sourcegraph.com/sourcegraph/appdash",
+			"revision": "5b9b70908c0e32b53e17215ee6e9515b02ad08b2",
+			"revisionTime": "2016-11-30T04:15:50Z"
+		},
+		{
+			"checksumSHA1": "JYGXK0rF/LoIg8jGrOlaO9OqPbI=",
+			"path": "sourcegraph.com/sourcegraph/appdash/internal/wire",
+			"revision": "5b9b70908c0e32b53e17215ee6e9515b02ad08b2",
+			"revisionTime": "2016-11-30T04:15:50Z"
+		},
+		{
+			"checksumSHA1": "uoXbuVVf3swmwCpEQKLZGGsnP8s=",
+			"path": "sourcegraph.com/sourcegraph/appdash/opentracing",
+			"revision": "5b9b70908c0e32b53e17215ee6e9515b02ad08b2",
+			"revisionTime": "2016-11-30T04:15:50Z"
 		}
 	],
 	"rootPath": "github.com/pilotariak/trinquet"
