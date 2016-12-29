@@ -21,7 +21,8 @@ For languages with no gRPC support, *trinquet* provides a [JSON](http://www.json
 
 It exports metrics for [Prometheus](https://prometheus.io/)
 
-Distributed tracing is available with [Zipkin](https://github.com/openzipkin) and [OpenTracing](http://opentracing.io/)
+Distributed tracing is available using [OpenTracing](http://opentracing.io/). Supported tracers are:
+* [x] [Zipkin](https://github.com/openzipkin)
 
 ## Usage
 
