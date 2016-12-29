@@ -33,7 +33,7 @@ Launch [Zipkin](https://github.com/openzipkin/) with Docker, and open a browser 
 
 Launch the *trinquetd* server:
 
-    $ ./trinquetd -v 2 -logtostderr
+    $ ./trinquetd -config trinquet.toml -v 2 -logtostderr
 
 Use the *trinquetctl* CLI to manage pelota informations :
 
