@@ -10,3 +10,10 @@ restPort = 9090
 [boltdb]
 file = "/tmp/ut.db"
 bucket = "trinquet"
+
+[tracing]
+name = "zipkin"
+
+[tracing.zipkin]
+host = "127.0.0.1"
+port = 9441

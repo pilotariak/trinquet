@@ -92,3 +92,77 @@ service LeagueService {
   }
 
 }
+
+// Tournament service
+
+
+message Team {
+  string name = 1;
+}
+
+message Group {
+  string name = 1;
+  repeated Team team = 3;
+}
+
+message Round {
+  string name = 1;
+  Team first = 2;
+  Team second = 3;
+  string score = 4;
+}
+
+// Tournament define a pelota league
+message Tournament {
+  string name = 1;
+  map<string, Group> groups = 2;
+  repeated Roud rounds = 3;
+  /* string begin = 2; */
+  /* string end = 3; */
+}
+
+message GetTournamentsResponse {
+  repeated Tournament tournaments = 1;
+
+message GetTournamentRequest {
+  string name = 1;
+}
+
+message GetTournamentsResponse {
+  Tournament tournament = 1;
+}
+
+message CreateTournamentRequest {
+  string name = 1;
+  repeated Group groups = 2;
+}
+
+message CreateTournamentResponse {
+  Tournament tournament = 1;
+}
+
+service TournamentService {
+
+  // List returns all available Tournament
+  rpc List() returns (GetTournamentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/tournaments"
+    };
+  }
+
+  // Create creates a new tournament
+  rpc Create(CreateTournamentRequest) returns (CreateTournamentResponse) {
+    option (google.api.http) = {
+      post: "/v1/tournaments"
+      body: "*"
+    };
+  }
+
+  // Get return a tournament
+  rpc Get(GetTournamentRequest) returns (GetTournamentResponse) {
+    option (google.api.http) = {
+      get: "/v1/tournaments/{name}"
+    };
+  }
+
+}

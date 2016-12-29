@@ -40,7 +40,9 @@ func NewCmdLeague() *cobra.Command {
 
 	cmd.PersistentFlags().StringVar(&httpAddress, "httpAddress", "127.0.0.1:8080", "Http address of the gRPC server")
 	cmd.PersistentFlags().StringVar(&leagueName, "name", "", "Name of the league")
-
+	cmd.PersistentFlags().StringVar(&tracerName, "tracer", "", "OpenTracing tracer to used")
+	cmd.PersistentFlags().StringVar(&zipkinAddress, "zipkinAddress", "127.0.0.1", "Zipkin host")
+	cmd.PersistentFlags().IntVar(&zipkinPort, "zipkinPort", 9441, "Zipkin port")
 	return cmd
 }
 
@@ -49,6 +51,7 @@ func printLeagueDescription() {
 		fmt.Println(redOut("League name can't be empty"))
 		return
 	}
+
 	client, err := getClient(httpAddress)
 	if err != nil {
 		fmt.Println(redOut(err))

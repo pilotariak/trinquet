@@ -25,9 +25,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	// "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/mwitkow/go-grpc-middleware"
-	// "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -43,6 +44,8 @@ import (
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/storage"
 	_ "github.com/pilotariak/trinquet/storage/boltdb"
+	"github.com/pilotariak/trinquet/tracing"
+	_ "github.com/pilotariak/trinquet/tracing/zipkin"
 	"github.com/pilotariak/trinquet/version"
 )
 
@@ -50,14 +53,14 @@ const (
 	port = 8080
 )
 
-func registerServer(backend storage.Backend) *grpc.Server {
+func registerServer(backend storage.Backend, tracer opentracing.Tracer) *grpc.Server {
 	glog.V(1).Info("Create the gRPC server")
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
-				grpc_prometheus.UnaryServerInterceptor)),
-		//otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()))),
+				grpc_prometheus.UnaryServerInterceptor,
+				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()))),
 	)
 	pb.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
 	grpc_prometheus.Register(server)
@@ -201,12 +204,18 @@ func main() {
 	if err != nil {
 		glog.Fatalf("failed to load configuration: %v", err)
 	}
+
 	db, err := getStorage(conf)
 	if err != nil {
 		glog.Fatalf("failed to load configuration: %v", err)
 	}
 	glog.V(1).Infof("Backend used: %s", db.Name())
 	initializePelotaDatabase(db)
+
+	tracer, err := tracing.New(conf)
+	if err != nil {
+		glog.Fatalf("failed to initialize OpenTracing: %v", err)
+	}
 
 	glog.V(0).Infoln("Create the gRPC servers")
 
@@ -221,7 +230,7 @@ func main() {
 	}
 	glog.V(0).Infof("Listen on %s", grpcAddr)
 
-	grpcServer := registerServer(db)
+	grpcServer := registerServer(db, tracer)
 	gwmux, err := registerGateway(ctx)
 	if err != nil {
 		glog.Fatalf("Failed to register JSON gateway: %s", err.Error())

@@ -38,7 +38,15 @@ restPort = 9090
 
 [boltdb]
 file = "/tmp/ut.db"
-bucket = "trinquet"`)
+bucket = "trinquet"
+
+[tracing]
+name = "zipkin"
+
+[tracing.zipkin]
+host = "127.0.0.1"
+port = 9441
+`)
 	err = ioutil.WriteFile(templateFile.Name(), data, 0700)
 	if err != nil {
 		t.Fatal(err)
@@ -55,13 +63,21 @@ bucket = "trinquet"`)
 	// Storage
 	if configuration.BoltDB.Bucket != "trinquet" ||
 		configuration.BoltDB.File != "/tmp/ut.db" {
-		t.Fatalf("Configuration BoldDB failed")
+		t.Fatalf("Configuration BoltDB failed")
 	}
 
 	// API
-	if configuration.API.GrpcPort != 80 ||
+	if configuration.API.GrpcPort != 8080 ||
 		configuration.API.RestPort != 9090 {
 		t.Fatalf("Configuration API failed")
 	}
 
+	// Tracing
+	if configuration.Tracing.Name != "zipkin" {
+		t.Fatalf("Configuration OpenTracing tracer failed")
+	}
+	if configuration.Tracing.Zipkin.Host != "127.0.0.1" ||
+		configuration.Tracing.Zipkin.Port != 9441 {
+		t.Fatalf("Configuration OpenTracing Zipkin failed")
+	}
 }

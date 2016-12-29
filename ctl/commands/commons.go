@@ -15,10 +15,15 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/fatih/color"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"google.golang.org/grpc"
 
+	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/pb"
+	"github.com/pilotariak/trinquet/tracing"
 )
 
 var (
@@ -27,10 +32,46 @@ var (
 	redOut    = color.New(color.FgRed).SprintFunc()
 
 	httpAddress string
+
+	tracerName    string
+	zipkinAddress string
+	zipkinPort    int
 )
 
+func createConfiguration() (*config.Configuration, error) {
+	switch tracerName {
+	case "zipkin":
+		return &config.Configuration{
+			Tracing: &config.TracingConfiguration{
+				Name: tracerName,
+				Zipkin: &config.ZipkinConfiguration{
+					Host: zipkinAddress,
+					Port: zipkinPort,
+				},
+			},
+		}, nil
+	default:
+		return nil, fmt.Errorf("OpenTracing tracer could not be empty.")
+	}
+}
+
 func getClient(uri string) (pb.LeagueServiceClient, error) {
-	conn, err := grpc.Dial(uri, grpc.WithInsecure())
+
+	conf, err := createConfiguration()
+	if err != nil {
+		return nil, err
+	}
+
+	tracer, err := tracing.New(conf)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := grpc.Dial(
+		uri,
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(
+			otgrpc.OpenTracingClientInterceptor(tracer, otgrpc.LogPayloads())))
 	if err != nil {
 		return nil, err
 	}

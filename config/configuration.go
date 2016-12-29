@@ -25,6 +25,7 @@ type Configuration struct {
 	Backend string
 	API     *APIConfiguration
 	BoltDB  *BoltDBConfiguration
+	Tracing *TracingConfiguration
 }
 
 // New returns a Configuration with default values
@@ -33,6 +34,7 @@ func New() *Configuration {
 		Backend: "boltdb",
 		BoltDB:  &BoltDBConfiguration{},
 		API:     &APIConfiguration{},
+		Tracing: &TracingConfiguration{},
 	}
 }
 
@@ -55,4 +57,15 @@ type APIConfiguration struct {
 type BoltDBConfiguration struct {
 	Bucket string
 	File   string
+}
+
+type ZipkinConfiguration struct {
+	Host string
+	Port int
+}
+
+// TracingConfiguration defines the OpenTracing usage
+type TracingConfiguration struct {
+	Name   string
+	Zipkin *ZipkinConfiguration
 }
