@@ -44,8 +44,16 @@ bucket = "trinquet"
 name = "zipkin"
 
 [tracing.zipkin]
-host = "127.0.0.1"
+host = "10.2.4.6"
 port = 9441
+
+[tracing.appdash]
+host = "10.1.3.5"
+port = 8080
+
+[tracing.jaeger]
+host = "10.2.2.2"
+port = 8888
 `)
 	err = ioutil.WriteFile(templateFile.Name(), data, 0700)
 	if err != nil {
@@ -76,8 +84,16 @@ port = 9441
 	if configuration.Tracing.Name != "zipkin" {
 		t.Fatalf("Configuration OpenTracing tracer failed")
 	}
-	if configuration.Tracing.Zipkin.Host != "127.0.0.1" ||
+	if configuration.Tracing.Zipkin.Host != "10.2.4.6" ||
 		configuration.Tracing.Zipkin.Port != 9441 {
 		t.Fatalf("Configuration OpenTracing Zipkin failed")
+	}
+	if configuration.Tracing.Appdash.Host != "10.1.3.5" ||
+		configuration.Tracing.Appdash.Port != 8080 {
+		t.Fatalf("Configuration OpenTracing Appdash failed")
+	}
+	if configuration.Tracing.Jaeger.Host != "10.2.2.2" ||
+		configuration.Tracing.Jaeger.Port != 8888 {
+		t.Fatalf("Configuration OpenTracing Jaeger failed")
 	}
 }

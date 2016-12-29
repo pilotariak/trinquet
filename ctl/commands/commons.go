@@ -19,11 +19,15 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 
 	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/tracing"
+	_ "github.com/pilotariak/trinquet/tracing/appdash"
+	_ "github.com/pilotariak/trinquet/tracing/jaeger"
+	_ "github.com/pilotariak/trinquet/tracing/zipkin"
 )
 
 var (
@@ -33,9 +37,11 @@ var (
 
 	httpAddress string
 
-	tracerName    string
-	zipkinAddress string
-	zipkinPort    int
+	tracerName     string
+	zipkinAddress  string
+	zipkinPort     int
+	appdashAddress string
+	appdashPort    int
 )
 
 func createConfiguration() (*config.Configuration, error) {
@@ -55,16 +61,15 @@ func createConfiguration() (*config.Configuration, error) {
 	}
 }
 
-func getClient(uri string) (pb.LeagueServiceClient, error) {
-
+func getClient(uri string) (pb.LeagueServiceClient, opentracing.Tracer, error) {
 	conf, err := createConfiguration()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	tracer, err := tracing.New(conf)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	conn, err := grpc.Dial(
@@ -73,9 +78,9 @@ func getClient(uri string) (pb.LeagueServiceClient, error) {
 		grpc.WithUnaryInterceptor(
 			otgrpc.OpenTracingClientInterceptor(tracer, otgrpc.LogPayloads())))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// defer conn.Close()
 
-	return pb.NewLeagueServiceClient(conn), nil
+	return pb.NewLeagueServiceClient(conn), tracer, nil
 }

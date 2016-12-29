@@ -12,42 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package zipkin
+package jaeger
 
 import (
 	"fmt"
 
 	"github.com/golang/glog"
 	"github.com/opentracing/opentracing-go"
-	"github.com/openzipkin/zipkin-go-opentracing"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/transport/zipkin"
 
 	"github.com/pilotariak/trinquet/config"
 	"github.com/pilotariak/trinquet/tracing"
 )
 
 const (
-	zipkinTracerLabel = "zipkin"
-
-	// Set to true for RPC style spans (Zipkin V1) vs Node style (OpenTracing)
-	sameSpan = false
+	label = "jaeger"
 )
 
 func init() {
-	tracing.RegisterTracer(zipkinTracerLabel, newTracer)
+	tracing.RegisterTracer(label, newTracer)
 }
 
 func newTracer(conf *config.Configuration) (opentracing.Tracer, error) {
-	glog.V(1).Infof("Create OpenTracing tracer using Zipkin: %s %d", conf.Tracing.Zipkin.Host, conf.Tracing.Zipkin.Port)
-	collector, err := zipkintracer.NewHTTPCollector(
-		fmt.Sprintf("http://%s:%d/api/v1/spans", conf.Tracing.Zipkin.Host, conf.Tracing.Zipkin.Port))
+	glog.V(1).Infof("Create OpenTracing tracer using Jaeger: %s %d", conf.Tracing.Zipkin.Host, conf.Tracing.Zipkin.Port)
+
+	// Jaeger tracer can be initialized with a transport that will
+	// report tracing Spans to a Zipkin backend
+	transport, err := zipkin.NewHTTPTransport(
+		fmt.Sprintf("%s:%d/api/v1/spans", conf.Tracing.Jaeger.Host, conf.Tracing.Jaeger.Port),
+		zipkin.HTTPLogger(jaeger.StdLogger),
+	)
 	if err != nil {
 		return nil, err
 	}
-	tracer, err := zipkintracer.NewTracer(
-		zipkintracer.NewRecorder(collector, true, fmt.Sprintf("%s:0", conf.Tracing.Zipkin.Host), tracing.ServiceName),
-		zipkintracer.ClientServerSameSpan(false))
-	if err != nil {
-		return nil, err
-	}
+
+	tracer, _ := jaeger.NewTracer(
+		tracing.ServiceName,
+		jaeger.NewConstSampler(true), // sample all traces
+		jaeger.NewRemoteReporter(transport, nil),
+	)
+	// defer closer.Close()
 	return tracer, nil
 }

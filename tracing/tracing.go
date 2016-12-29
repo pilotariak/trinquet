@@ -22,6 +22,11 @@ import (
 	"github.com/pilotariak/trinquet/config"
 )
 
+const (
+	// ServiceName used to setup the tracer
+	ServiceName string = "trinquet"
+)
+
 type TracerFunc func(conf *config.Configuration) (opentracing.Tracer, error)
 
 var registeredTracers = map[string](TracerFunc){}
@@ -41,7 +46,7 @@ func New(conf *config.Configuration) (opentracing.Tracer, error) {
 	}
 
 	// explicitly set our tracer to be the default tracer.
-	opentracing.InitGlobalTracer(tracer)
+	opentracing.SetGlobalTracer(tracer)
 
 	return tracer, nil
 }

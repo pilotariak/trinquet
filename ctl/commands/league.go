@@ -17,6 +17,8 @@ package commands
 import (
 	"fmt"
 
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
 
@@ -43,6 +45,8 @@ func NewCmdLeague() *cobra.Command {
 	cmd.PersistentFlags().StringVar(&tracerName, "tracer", "", "OpenTracing tracer to used")
 	cmd.PersistentFlags().StringVar(&zipkinAddress, "zipkinAddress", "127.0.0.1", "Zipkin host")
 	cmd.PersistentFlags().IntVar(&zipkinPort, "zipkinPort", 9441, "Zipkin port")
+	cmd.PersistentFlags().StringVar(&appdashAddress, "appdashAddress", "127.0.0.1", "Appdash server address")
+	cmd.PersistentFlags().IntVar(&appdashPort, "appdashPort", 8080, "Appdash server port")
 	return cmd
 }
 
@@ -52,12 +56,18 @@ func printLeagueDescription() {
 		return
 	}
 
-	client, err := getClient(httpAddress)
+	client, tracer, err := getClient(httpAddress)
 	if err != nil {
 		fmt.Println(redOut(err))
 		return
 	}
-	resp, err := client.Get(context.Background(), &pb.GetLeagueRequest{
+
+	span := tracer.StartSpan("league")
+	span.SetTag(string(ext.Component), "print")
+	ctx := opentracing.ContextWithSpan(context.Background(), span)
+	defer span.Finish()
+
+	resp, err := client.Get(ctx, &pb.GetLeagueRequest{
 		Name: leagueName,
 	})
 	if err != nil {

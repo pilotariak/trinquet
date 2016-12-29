@@ -45,6 +45,8 @@ import (
 	"github.com/pilotariak/trinquet/storage"
 	_ "github.com/pilotariak/trinquet/storage/boltdb"
 	"github.com/pilotariak/trinquet/tracing"
+	_ "github.com/pilotariak/trinquet/tracing/appdash"
+	_ "github.com/pilotariak/trinquet/tracing/jaeger"
 	_ "github.com/pilotariak/trinquet/tracing/zipkin"
 	"github.com/pilotariak/trinquet/version"
 )

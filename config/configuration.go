@@ -64,8 +64,20 @@ type ZipkinConfiguration struct {
 	Port int
 }
 
+type AppdashConfiguration struct {
+	Host string
+	Port int
+}
+
+type JaegerConfiguration struct {
+	Host string
+	Port int
+}
+
 // TracingConfiguration defines the OpenTracing usage
 type TracingConfiguration struct {
-	Name   string
-	Zipkin *ZipkinConfiguration
+	Name    string
+	Zipkin  *ZipkinConfiguration
+	Appdash *AppdashConfiguration
+	Jaeger  *JaegerConfiguration
 }

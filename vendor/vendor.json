@@ -457,6 +457,54 @@
 			"revisionTime": "2016-10-24T13:13:51Z"
 		},
 		{
+			"checksumSHA1": "7TxpBWEjdLynnY8HXlJGXqF6m/c=",
+			"path": "github.com/uber/jaeger-client-go",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "2YFNtVmzqktT363MIkePoTeS8lM=",
+			"path": "github.com/uber/jaeger-client-go/internal/spanlog",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "6BSwZDAQQGk0a24NhxgOrp7qDAE=",
+			"path": "github.com/uber/jaeger-client-go/thrift-gen/agent",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "smEy+gu6aVID/lOBq35jZLlhejE=",
+			"path": "github.com/uber/jaeger-client-go/thrift-gen/sampling",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "XlbTGfqnmRg/rIOb82+KvcFsHjY=",
+			"path": "github.com/uber/jaeger-client-go/thrift-gen/zipkincore",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "7VEsNYhptlnXGPBsEozZbX1ak04=",
+			"path": "github.com/uber/jaeger-client-go/transport",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "CWccfxPaLCflj4k6R7xrYlzEKmc=",
+			"path": "github.com/uber/jaeger-client-go/transport/zipkin",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
+			"checksumSHA1": "L8wOszEI2XoeZMfM7dDVE9GxvBg=",
+			"path": "github.com/uber/jaeger-client-go/utils",
+			"revision": "f424dfca4cd0a040ee8a28976f422aed25771b4a",
+			"revisionTime": "2016-12-14T23:39:57Z"
+		},
+		{
 			"checksumSHA1": "9jjO5GjLa0XF/nfWihF02RoH4qc=",
 			"path": "golang.org/x/net/context",
 			"revision": "4971afdc2f162e82d185353533d3cf16188a9f4e",
