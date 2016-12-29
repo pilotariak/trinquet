@@ -15,6 +15,7 @@ It exports metrics for [Prometheus](https://prometheus.io/)
 
 Distributed tracing is available using [OpenTracing](http://opentracing.io/). Supported tracers are:
 * [x] [Zipkin](https://github.com/openzipkin)
+* [x] [Appdash](https://github.com/sourcegraph/appdash)
 
 
 ## Installation
@@ -27,9 +28,13 @@ You can download the binaries :
 
 ## Usage
 
-Launch [Zipkin](https://github.com/openzipkin/) with Docker, and open a browser on 9411:
+Launch Zipkin with Docker, and open a browser on 9411:
 
     $ docker run -d -p 9411:9411 openzipkin/zipkin
+
+or Appdash with Docker (open a browser on 7700):
+
+    $ docker run -d -p 7700:7700 -p 7701:7701 solher/appdash
 
 Launch the *trinquetd* server:
 
