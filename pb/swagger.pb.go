@@ -85,6 +85,74 @@ swagger = `{
           "LeagueService"
         ]
       }
+    },
+    "/v1/tournaments": {
+      "get": {
+        "summary": "List returns all available Tournament",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/pbGetTournamentsResponse"
+            }
+          }
+        },
+        "tags": [
+          "TournamentService"
+        ]
+      },
+      "post": {
+        "summary": "Create creates a new tournament",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/pbCreateTournamentResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateTournamentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TournamentService"
+        ]
+      }
+    },
+    "/v1/tournaments/{name}": {
+      "get": {
+        "summary": "Get return a tournament",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/pbGetTournamentResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "TournamentService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -110,6 +178,29 @@ swagger = `{
         },
         "league": {
           "$ref": "#/definitions/pbLeague"
+        }
+      }
+    },
+    "pbCreateTournamentRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "format": "string"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbGroup"
+          }
+        }
+      }
+    },
+    "pbCreateTournamentResponse": {
+      "type": "object",
+      "properties": {
+        "tournament": {
+          "$ref": "#/definitions/pbTournament"
         }
       }
     },
@@ -163,6 +254,52 @@ swagger = `{
         }
       }
     },
+    "pbGetTournamentRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "pbGetTournamentResponse": {
+      "type": "object",
+      "properties": {
+        "tournament": {
+          "$ref": "#/definitions/pbTournament"
+        }
+      }
+    },
+    "pbGetTournamentsRequest": {
+      "type": "object"
+    },
+    "pbGetTournamentsResponse": {
+      "type": "object",
+      "properties": {
+        "tournaments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbTournament"
+          }
+        }
+      }
+    },
+    "pbGroup": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "format": "string"
+        },
+        "team": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbTeam"
+          }
+        }
+      }
+    },
     "pbLeague": {
       "type": "object",
       "properties": {
@@ -204,6 +341,56 @@ swagger = `{
           "format": "string"
         }
       }
+    },
+    "pbRound": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "format": "string"
+        },
+        "first": {
+          "$ref": "#/definitions/pbTeam"
+        },
+        "second": {
+          "$ref": "#/definitions/pbTeam"
+        },
+        "score": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "pbTeam": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "pbTournament": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "format": "string"
+        },
+        "groups": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/pbGroup"
+          }
+        },
+        "rounds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbRound"
+          }
+        }
+      },
+      "title": "Tournament define a pelota league"
     }
   }
 }

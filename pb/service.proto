@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -116,19 +116,23 @@ message Round {
 message Tournament {
   string name = 1;
   map<string, Group> groups = 2;
-  repeated Roud rounds = 3;
+  repeated Round rounds = 3;
   /* string begin = 2; */
   /* string end = 3; */
 }
 
+message GetTournamentsRequest {
+}
+
 message GetTournamentsResponse {
   repeated Tournament tournaments = 1;
+}
 
 message GetTournamentRequest {
   string name = 1;
 }
 
-message GetTournamentsResponse {
+message GetTournamentResponse {
   Tournament tournament = 1;
 }
 
@@ -144,7 +148,7 @@ message CreateTournamentResponse {
 service TournamentService {
 
   // List returns all available Tournament
-  rpc List() returns (GetTournamentsResponse) {
+  rpc List(GetTournamentsRequest) returns (GetTournamentsResponse) {
     option (google.api.http) = {
       get: "/v1/tournaments"
     };
