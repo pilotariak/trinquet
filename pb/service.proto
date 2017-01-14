@@ -19,6 +19,34 @@ package pb;
 // for grpc-gateway
 import "google/api/annotations.proto";
 
+
+// Health service
+
+// message HealthCheckRequest {
+//   string service = 1;
+// }
+
+// message HealthCheckResponse {
+//   enum ServingStatus {
+//     UNKNOWN = 0;
+//     SERVING = 1;
+//     NOT_SERVING = 2;
+//   }
+//   ServingStatus status = 1;
+// }
+
+// service HealthService {
+
+//   rpc Check(HealthCheckRequest) returns (HealthCheckResponse) {
+//     option (google.api.http) = {
+//       get: "/v1/health"
+//     };
+//   }
+
+// }
+
+// League service
+
 message Discipline {
   string id = 1;
   string title = 2;

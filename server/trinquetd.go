@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,10 +28,11 @@ import (
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/mwitkow/go-grpc-middleware"
 	"github.com/opentracing/opentracing-go"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/pilotariak/paleta/leagues"
 	_ "github.com/pilotariak/paleta/leagues/ctpb"
@@ -65,7 +66,13 @@ func registerServer(backend storage.Backend, tracer opentracing.Tracer) *grpc.Se
 				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()))),
 	)
 	pb.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
+
+	healthServer := health.NewServer()
+	healthpb.RegisterHealthServer(server, healthServer)
+	healthServer.SetServingStatus("LeagueService", healthpb.HealthCheckResponse_SERVING)
+
 	grpc_prometheus.Register(server)
+
 	return server
 }
 
@@ -233,6 +240,7 @@ func main() {
 	glog.V(0).Infof("Listen on %s", grpcAddr)
 
 	grpcServer := registerServer(db, tracer)
+
 	gwmux, err := registerGateway(ctx)
 	if err != nil {
 		glog.Fatalf("Failed to register JSON gateway: %s", err.Error())
@@ -247,10 +255,14 @@ func main() {
              </body>
              </html>`))
 	})
+	httpmux.HandleFunc("/version", api.VersionHandler)
 	httpmux.Handle("/v1/", gwmux)
 	httpmux.Handle("/metrics", prometheus.Handler())
-	httpmux.HandleFunc("/healthz", api.HealthHandler)
-	httpmux.HandleFunc("/version", api.VersionHandler)
+	healthHandler, err := api.NewHealthHandler(grpcAddr)
+	if err != nil {
+		glog.Fatalf("Failed to create Health monitor: %s", err.Error())
+	}
+	httpmux.HandleFunc("/healthz", healthHandler.Handle)
 	api.ServeSwagger(httpmux)
 
 	glog.V(0).Infof("Start gRPC server on %s", grpcAddr)

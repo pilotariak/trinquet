@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/opentracing/opentracing-go"
 	"golang.org/x/net/context"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/storage"
@@ -39,6 +40,12 @@ func NewLeagueService(backend storage.Backend) *LeagueService {
 	return &LeagueService{
 		Backend: backend,
 	}
+}
+
+func (lc *LeagueService) Check(ctx context.Context, in *healthpb.HealthCheckRequest) (*healthpb.HealthCheckResponse, error) {
+	return &healthpb.HealthCheckResponse{
+		Status: healthpb.HealthCheckResponse_SERVING,
+	}, nil
 }
 
 func (ls *LeagueService) List(ctx context.Context, request *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
