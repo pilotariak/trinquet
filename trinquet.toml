@@ -12,17 +12,17 @@ file = "/tmp/ut.db"
 bucket = "trinquet"
 
 [tracing]
-# name = "zipkin"
-name = "appdash"
+name = "zipkin"
+# name = "appdash"
 # name = "jaeger"
 
 [tracing.zipkin]
 host = "127.0.0.1"
-port = 9441
+port = 9411
 
-[tracing.appdash]
-host = "127.0.0.1"
-port = 7700
+# [tracing.appdash]
+# host = "127.0.0.1"
+# port = 7700
 
 [tracing.jaeger]
 host = "127.0.0.1"
