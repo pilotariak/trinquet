@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,10 @@ func init() {
 }
 
 func newTracer(conf *config.Configuration) (opentracing.Tracer, error) {
-	glog.V(1).Infof("Create OpenTracing tracer using Zipkin: %s %d", conf.Tracing.Zipkin.Host, conf.Tracing.Zipkin.Port)
+	glog.V(1).Infof("Create OpenTracing tracer using Zipkin: %s", conf.Tracing.Zipkin)
+	if conf.Tracing.Zipkin == nil {
+		return nil, fmt.Errorf("No configuration for Zipkin Opentracing: %s", conf)
+	}
 	collector, err := zipkintracer.NewHTTPCollector(
 		fmt.Sprintf("http://%s:%d/api/v1/spans", conf.Tracing.Zipkin.Host, conf.Tracing.Zipkin.Port))
 	if err != nil {

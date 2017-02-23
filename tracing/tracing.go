@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package tracing
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/opentracing/opentracing-go"
+	"golang.org/x/net/context"
 
 	"github.com/pilotariak/trinquet/config"
 )
@@ -36,6 +38,7 @@ func RegisterTracer(name string, f TracerFunc) {
 }
 
 func New(conf *config.Configuration) (opentracing.Tracer, error) {
+	glog.V(1).Infof("Opentracing setup: %s", conf.Tracing)
 	f, ok := registeredTracers[conf.Tracing.Name]
 	if !ok {
 		return nil, fmt.Errorf("Unsupported tracer: %s", conf.Tracing.Name)
@@ -47,6 +50,15 @@ func New(conf *config.Configuration) (opentracing.Tracer, error) {
 
 	// explicitly set our tracer to be the default tracer.
 	opentracing.SetGlobalTracer(tracer)
-
 	return tracer, nil
+}
+
+func GetSpan(ctx context.Context, operationName string) opentracing.Span {
+	parentSpan := opentracing.SpanFromContext(ctx)
+	if parentSpan != nil {
+		glog.V(2).Infof("Got parent span for service")
+	} else {
+		parentSpan, ctx = opentracing.StartSpanFromContext(ctx, operationName)
+	}
+	return parentSpan
 }
