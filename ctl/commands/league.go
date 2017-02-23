@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	"github.com/spf13/cobra"
-	"golang.org/x/net/context"
 
 	"github.com/pilotariak/trinquet/pb"
 )
@@ -35,39 +32,33 @@ func NewCmdLeague() *cobra.Command {
 		Use:   "league",
 		Short: "Print information about a league",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			printLeagueDescription()
+			client, err := newgRPCClient(cmd)
+			if err != nil {
+				return err
+			}
+			printLeagueDescription(client)
 			return nil
 		},
 	}
-
-	cmd.PersistentFlags().StringVar(&httpAddress, "httpAddress", "127.0.0.1:8080", "Http address of the gRPC server")
 	cmd.PersistentFlags().StringVar(&leagueName, "name", "", "Name of the league")
-	cmd.PersistentFlags().StringVar(&tracerName, "tracer", "", "OpenTracing tracer to used")
-	cmd.PersistentFlags().StringVar(&zipkinAddress, "zipkinAddress", "127.0.0.1", "Zipkin host")
-	cmd.PersistentFlags().IntVar(&zipkinPort, "zipkinPort", 9441, "Zipkin port")
-	cmd.PersistentFlags().StringVar(&appdashAddress, "appdashAddress", "127.0.0.1", "Appdash server address")
-	cmd.PersistentFlags().IntVar(&appdashPort, "appdashPort", 8080, "Appdash server port")
 	return cmd
 }
 
-func printLeagueDescription() {
+func printLeagueDescription(gRPCClient *gRPCClient) {
 	if len(leagueName) == 0 {
 		fmt.Println(redOut("League name can't be empty"))
 		return
 	}
 
-	client, tracer, err := getClient(httpAddress)
+	conn, err := gRPCClient.getConn()
 	if err != nil {
 		fmt.Println(redOut(err))
 		return
 	}
+	defer conn.Close()
 
-	span := tracer.StartSpan("league")
-	span.SetTag(string(ext.Component), "print")
-	ctx := opentracing.ContextWithSpan(context.Background(), span)
-	defer span.Finish()
-
-	resp, err := client.Get(ctx, &pb.GetLeagueRequest{
+	client := pb.NewLeagueServiceClient(conn)
+	resp, err := client.Get(gRPCClient.getContext(), &pb.GetLeagueRequest{
 		Name: leagueName,
 	})
 	if err != nil {

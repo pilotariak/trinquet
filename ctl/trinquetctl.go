@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,11 @@ import (
 )
 
 var (
+	// verbose       bool
+	username      string
+	password      string
+	serverAddress string
+
 	logging bool
 	logFile = "/tmp/trinquetctl.log"
 
@@ -35,6 +40,10 @@ var (
 )
 
 func init() {
+	TrinquetctlCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username to use")
+	TrinquetctlCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password to use")
+	TrinquetctlCmd.PersistentFlags().StringVarP(&serverAddress, "serverAddr", "s", "localhost:8080", "The server address in the format of host:port")
+
 	// TrinquetctlCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	// TrinquetctlCmd.PersistentFlags().BoolVar(&logging, "log", false, "Enable Logging")
 	// TrinquetctlCmd.PersistentFlags().StringVar(&logFile, "logFile", "", "Log File path (if set, logging enabled automatically)")

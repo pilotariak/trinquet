@@ -18,16 +18,13 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
-	"github.com/opentracing/opentracing-go"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
-	"github.com/pilotariak/trinquet/config"
-	"github.com/pilotariak/trinquet/pb"
-	"github.com/pilotariak/trinquet/tracing"
-	_ "github.com/pilotariak/trinquet/tracing/appdash"
-	_ "github.com/pilotariak/trinquet/tracing/jaeger"
-	_ "github.com/pilotariak/trinquet/tracing/zipkin"
+	"github.com/pilotariak/trinquet/auth"
 )
 
 var (
@@ -44,43 +41,42 @@ var (
 	appdashPort    int
 )
 
-func createConfiguration() (*config.Configuration, error) {
-	switch tracerName {
-	case "zipkin":
-		return &config.Configuration{
-			Tracing: &config.TracingConfiguration{
-				Name: tracerName,
-				Zipkin: &config.ZipkinConfiguration{
-					Host: zipkinAddress,
-					Port: zipkinPort,
-				},
-			},
-		}, nil
-	default:
-		return nil, fmt.Errorf("OpenTracing tracer could not be empty.")
-	}
+type gRPCClient struct {
+	ServerAddress string
+	Username      string
+	Password      string
 }
 
-func getClient(uri string) (pb.LeagueServiceClient, opentracing.Tracer, error) {
-	conf, err := createConfiguration()
-	if err != nil {
-		return nil, nil, err
+func newgRPCClient(cmd *cobra.Command) (*gRPCClient, error) {
+	serverAddr := cmd.Flag("serverAddr")
+	if serverAddr == nil {
+		return nil, fmt.Errorf("Parameter 'serverAddr' must not be empty")
 	}
-
-	tracer, err := tracing.New(conf)
-	if err != nil {
-		return nil, nil, err
+	username := cmd.Flag("username")
+	if username == nil {
+		return nil, fmt.Errorf("Parameter 'username' must not be empty")
 	}
-
-	conn, err := grpc.Dial(
-		uri,
+	password := cmd.Flag("password")
+	if password == nil {
+		return nil, fmt.Errorf("Parameter 'password' must not be empty")
+	}
+	return &gRPCClient{
+		ServerAddress: serverAddr.Value.String(),
+		Username:      username.Value.String(),
+		Password:      password.Value.String(),
+	}, nil
+}
+func (client *gRPCClient) getConn() (*grpc.ClientConn, error) {
+	return grpc.Dial(
+		client.ServerAddress,
 		grpc.WithInsecure(),
-		grpc.WithUnaryInterceptor(
-			otgrpc.OpenTracingClientInterceptor(tracer, otgrpc.LogPayloads())))
-	if err != nil {
-		return nil, nil, err
-	}
-	// defer conn.Close()
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
+	)
+}
 
-	return pb.NewLeagueServiceClient(conn), tracer, nil
+func (client *gRPCClient) getContext() context.Context {
+	authent := auth.MakeBasicAuth(client.Username, client.Password)
+	md := metadata.Pairs("authorization", fmt.Sprintf("basic %s", authent))
+	return metadata.NewContext(context.Background(), md)
 }
