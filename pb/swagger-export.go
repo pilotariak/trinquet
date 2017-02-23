@@ -13,5 +13,5 @@
 package pb
 
 const (
-	Swagger = swagger
+	Swagger = api
 )
