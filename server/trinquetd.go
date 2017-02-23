@@ -27,6 +27,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/mwitkow/go-grpc-middleware"
+	"github.com/mwitkow/go-grpc-middleware/auth"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
@@ -42,6 +43,7 @@ import (
 	_ "github.com/pilotariak/paleta/leagues/lidfpb"
 	"github.com/pilotariak/trinquet/api"
 	"github.com/pilotariak/trinquet/config"
+	"github.com/pilotariak/trinquet/middleware"
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/storage"
 	_ "github.com/pilotariak/trinquet/storage/boltdb"
@@ -56,12 +58,23 @@ const (
 	port = 8080
 )
 
+var (
+	debug           bool
+	vrs             bool
+	defaultConfFile string
+	// grpcPort int
+	// gwPort   int
+)
+
 func registerServer(backend storage.Backend, tracer opentracing.Tracer) *grpc.Server {
 	glog.V(1).Info("Create the gRPC server")
+
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
+				middleware.ServerLoggingInterceptor(true),
+				grpc_auth.UnaryServerInterceptor(authenticate),
 				grpc_prometheus.UnaryServerInterceptor,
 				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()))),
 	)
@@ -181,15 +194,7 @@ func initializePelotaDatabase(db storage.Backend) {
 	}
 }
 
-func main() {
-
-	var (
-		debug           bool
-		vrs             bool
-		defaultConfFile string
-		// grpcPort int
-		// gwPort   int
-	)
+func init() {
 	// parse flags
 	flag.BoolVar(&vrs, "version", false, "print version and exit")
 	flag.BoolVar(&debug, "d", false, "run in debug mode")
@@ -208,6 +213,9 @@ func main() {
 		fmt.Printf("%s\n", version.Version)
 		os.Exit(0)
 	}
+}
+
+func main() {
 
 	conf, err := config.LoadFileConfig(defaultConfFile)
 	if err != nil {
@@ -268,11 +276,12 @@ func main() {
 	glog.V(0).Infof("Start gRPC server on %s", grpcAddr)
 	go grpcServer.Serve(lis)
 
+	gwAddr := fmt.Sprintf(":%d", conf.API.RestPort)
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", conf.API.RestPort),
-		Handler: grpcHandlerFunc(grpcServer, httpmux), // gwmux),
+		Addr:    gwAddr,
+		Handler: grpcHandlerFunc(grpcServer, httpmux),
 	}
-	glog.V(0).Infof("Start HTTP server on %d", conf.API.RestPort)
+	glog.V(0).Infof("Start HTTP server on %s", gwAddr)
 	glog.Fatal(srv.ListenAndServe())
 
 }
