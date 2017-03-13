@@ -301,52 +301,58 @@
 			"revisionTime": "2016-09-29T22:04:58Z"
 		},
 		{
-			"checksumSHA1": "BPZnFZkaYGwSka4Te4x6uDuwJjo=",
+			"checksumSHA1": "lzPj2yJz4Dy6ev0O0L4PNVzplAw=",
 			"path": "github.com/opentracing/opentracing-go",
-			"revision": "ac5446f53f2c0fc68dc16dc5f426eae1cd288b34",
-			"revisionTime": "2016-12-02T03:53:12Z"
+			"revision": "6edb48674bd9467b8e91fda004f2bd7202d60ce4",
+			"revisionTime": "2017-02-06T22:16:52Z"
 		},
 		{
-			"checksumSHA1": "0bkFiSz3kLFG45wp0XFeg/ll5qg=",
+			"checksumSHA1": "+q64ZAwI2qF5goM1mLjav88NOYQ=",
+			"path": "github.com/opentracing/opentracing-go/ext",
+			"revision": "6edb48674bd9467b8e91fda004f2bd7202d60ce4",
+			"revisionTime": "2017-02-06T22:16:52Z"
+		},
+		{
+			"checksumSHA1": "+rbKrafLHDnrQFgeWawo9tfZhV4=",
 			"path": "github.com/opentracing/opentracing-go/log",
-			"revision": "ac5446f53f2c0fc68dc16dc5f426eae1cd288b34",
-			"revisionTime": "2016-12-02T03:53:12Z"
+			"revision": "6edb48674bd9467b8e91fda004f2bd7202d60ce4",
+			"revisionTime": "2017-02-06T22:16:52Z"
 		},
 		{
-			"checksumSHA1": "wpkaAuf1PlEXPa5+Wh7U7UfUgkk=",
+			"checksumSHA1": "1dfqsicLh/QE2TdZYb2moEijbmc=",
 			"path": "github.com/openzipkin/zipkin-go-opentracing",
-			"revision": "594640b9ef7e5c994e8d9499359d693c032d738c",
-			"revisionTime": "2016-12-20T11:37:16Z"
+			"revision": "6022d4d3ed39632fad842942bda1813a9b4f63c8",
+			"revisionTime": "2017-02-03T12:00:57Z"
 		},
 		{
 			"checksumSHA1": "1HybJ2ha9Zd7AtN6VfoHxueG+NE=",
 			"path": "github.com/openzipkin/zipkin-go-opentracing/_thrift/gen-go/scribe",
-			"revision": "594640b9ef7e5c994e8d9499359d693c032d738c",
-			"revisionTime": "2016-12-20T11:37:16Z"
+			"revision": "6022d4d3ed39632fad842942bda1813a9b4f63c8",
+			"revisionTime": "2017-02-03T12:00:57Z"
 		},
 		{
 			"checksumSHA1": "EzGbZPnkLSxskuXj/1kqlaIQwzA=",
 			"path": "github.com/openzipkin/zipkin-go-opentracing/_thrift/gen-go/zipkincore",
-			"revision": "594640b9ef7e5c994e8d9499359d693c032d738c",
-			"revisionTime": "2016-12-20T11:37:16Z"
+			"revision": "6022d4d3ed39632fad842942bda1813a9b4f63c8",
+			"revisionTime": "2017-02-03T12:00:57Z"
 		},
 		{
 			"checksumSHA1": "kC4Y7lGVaheJmjEz8CqQx3yhCAg=",
 			"path": "github.com/openzipkin/zipkin-go-opentracing/flag",
-			"revision": "594640b9ef7e5c994e8d9499359d693c032d738c",
-			"revisionTime": "2016-12-20T11:37:16Z"
+			"revision": "6022d4d3ed39632fad842942bda1813a9b4f63c8",
+			"revisionTime": "2017-02-03T12:00:57Z"
 		},
 		{
 			"checksumSHA1": "Op6jFHB18rC99wIur01iSo7ePRg=",
 			"path": "github.com/openzipkin/zipkin-go-opentracing/types",
-			"revision": "594640b9ef7e5c994e8d9499359d693c032d738c",
-			"revisionTime": "2016-12-20T11:37:16Z"
+			"revision": "6022d4d3ed39632fad842942bda1813a9b4f63c8",
+			"revisionTime": "2017-02-03T12:00:57Z"
 		},
 		{
-			"checksumSHA1": "AIBKJuQ9zOb+/2fGDjUdAflRKBY=",
+			"checksumSHA1": "Ox2GnG2JgQVorrkqVg8iEVnubXc=",
 			"path": "github.com/openzipkin/zipkin-go-opentracing/wire",
-			"revision": "594640b9ef7e5c994e8d9499359d693c032d738c",
-			"revisionTime": "2016-12-20T11:37:16Z"
+			"revision": "6022d4d3ed39632fad842942bda1813a9b4f63c8",
+			"revisionTime": "2017-02-03T12:00:57Z"
 		},
 		{
 			"checksumSHA1": "BMjSRH5mPFsBz4Z1r9f/MzwVlXA=",
