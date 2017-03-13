@@ -16,23 +16,17 @@ package api
 
 import (
 	"github.com/golang/glog"
-	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/net/context"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/pilotariak/trinquet/pb"
 	"github.com/pilotariak/trinquet/storage"
+	"github.com/pilotariak/trinquet/tracing"
 )
 
 type LeagueService struct {
 	Backend storage.Backend
-}
-
-func traceSpan(ctx context.Context) {
-	parentSpan := opentracing.SpanFromContext(ctx)
-	if parentSpan != nil {
-		glog.V(2).Info("Parent ctx present in League Service")
-	}
 }
 
 func NewLeagueService(backend storage.Backend) *LeagueService {
@@ -50,23 +44,25 @@ func (lc *LeagueService) Check(ctx context.Context, in *healthpb.HealthCheckRequ
 
 func (ls *LeagueService) List(ctx context.Context, request *pb.GetLeaguesRequest) (*pb.GetLeaguesResponse, error) {
 	glog.V(1).Info("[league] List all leagues")
-	traceSpan(ctx)
+	span := tracing.GetSpan(ctx, "list_leagues")
+	defer span.Finish()
+
 	theleagues, err := storage.ListAll(ls.Backend)
 	if err != nil {
+		span.LogFields(log.Error(err))
 		return nil, err
 	}
+	span.LogFields(log.Object("storage response", theleagues))
 	return &pb.GetLeaguesResponse{Leagues: theleagues}, nil
 }
 
 func (ls *LeagueService) Create(ctx context.Context, request *pb.CreateLeagueRequest) (*pb.CreateLeagueResponse, error) {
 	glog.V(1).Info("[league] Create a new league")
-	traceSpan(ctx)
 	return &pb.CreateLeagueResponse{}, nil
 }
 
 func (ls *LeagueService) Get(ctx context.Context, request *pb.GetLeagueRequest) (*pb.GetLeagueResponse, error) {
 	glog.V(1).Info("[league] Retrieve a league")
-	traceSpan(ctx)
 	league, err := storage.RetrieveLeague(ls.Backend, request.Name)
 	if err != nil {
 		return nil, err

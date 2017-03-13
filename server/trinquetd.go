@@ -48,7 +48,6 @@ import (
 	"github.com/pilotariak/trinquet/storage"
 	_ "github.com/pilotariak/trinquet/storage/boltdb"
 	"github.com/pilotariak/trinquet/tracing"
-	_ "github.com/pilotariak/trinquet/tracing/appdash"
 	_ "github.com/pilotariak/trinquet/tracing/jaeger"
 	_ "github.com/pilotariak/trinquet/tracing/zipkin"
 	"github.com/pilotariak/trinquet/version"
@@ -89,13 +88,12 @@ func registerServer(backend storage.Backend, tracer opentracing.Tracer) *grpc.Se
 	return server
 }
 
-func registerGateway(ctx context.Context) (*runtime.ServeMux, error) {
+func registerGateway(ctx context.Context, addr string) (*runtime.ServeMux, error) {
 	glog.V(1).Info("Create the REST gateway")
 	opts := []grpc.DialOption{
 		grpc.WithInsecure(),
 	}
 	gwmux := runtime.NewServeMux()
-	addr := fmt.Sprintf(":%d", port)
 	if err := pb.RegisterLeagueServiceHandlerFromEndpoint(ctx, gwmux, addr, opts); err != nil {
 		return nil, err
 	}
@@ -249,7 +247,7 @@ func main() {
 
 	grpcServer := registerServer(db, tracer)
 
-	gwmux, err := registerGateway(ctx)
+	gwmux, err := registerGateway(ctx, fmt.Sprintf("localhost:%d", conf.API.GrpcPort))
 	if err != nil {
 		glog.Fatalf("Failed to register JSON gateway: %s", err.Error())
 	}
