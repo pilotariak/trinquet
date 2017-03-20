@@ -23,12 +23,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
-	"github.com/mwitkow/go-grpc-middleware"
-	"github.com/mwitkow/go-grpc-middleware/auth"
-	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -73,9 +69,9 @@ func registerServer(backend storage.Backend, tracer opentracing.Tracer) *grpc.Se
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
 				middleware.ServerLoggingInterceptor(true),
-				grpc_auth.UnaryServerInterceptor(authenticate),
 				grpc_prometheus.UnaryServerInterceptor,
-				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()))),
+				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
+				grpc_auth.UnaryServerInterceptor(authenticate))),
 	)
 	pb.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
 
