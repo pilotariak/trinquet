@@ -1,0 +1,29 @@
+syntax="proto3";
+
+package info;
+
+// for grpc-gateway
+import "google/api/annotations.proto";
+
+message GetInfoRequest {
+}
+
+message GetInfoResponse {
+  string version = 1;
+  repeated WebServiceStatus webservices = 2;
+}
+
+message WebServiceStatus {
+  string endpoint = 1;
+  string name = 2;
+  string status = 3;
+  string text = 4;
+}
+
+service InfoService {
+  rpc Get(GetInfoRequest) returns (GetInfoResponse) {
+    option (google.api.http) = {
+      get : "/info"
+    };
+  }
+}

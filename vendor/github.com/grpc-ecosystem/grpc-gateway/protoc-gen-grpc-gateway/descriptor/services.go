@@ -8,7 +8,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/httprule"
-	options "github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api"
+	options "google.golang.org/genproto/googleapis/api/annotations"
 )
 
 // loadServices registers services and their methods from "targetFile" to "r".
@@ -89,7 +89,7 @@ func (r *Registry) newMethod(svc *Service, md *descriptor.MethodDescriptorProto,
 		case opts.GetDelete() != "":
 			httpMethod = "DELETE"
 			pathTemplate = opts.GetDelete()
-			if opts.Body != "" {
+			if opts.Body != "" && !r.allowDeleteBody {
 				return nil, fmt.Errorf("needs request body even though http method is DELETE: %s", md.GetName())
 			}
 

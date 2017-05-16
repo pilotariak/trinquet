@@ -1,4 +1,28 @@
+// Copyright (c) 2017 Uber Technologies, Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 package jaeger
+
+import (
+	"time"
+)
 
 // SamplerOption is a function that sets some option on the sampler
 type SamplerOption func(options *samplerOptions)
@@ -7,11 +31,12 @@ type SamplerOption func(options *samplerOptions)
 var SamplerOptions samplerOptions
 
 type samplerOptions struct {
-	metrics       *Metrics
-	maxOperations int
-	sampler       Sampler
-	logger        Logger
-	hostPort      string
+	metrics                 *Metrics
+	maxOperations           int
+	sampler                 Sampler
+	logger                  Logger
+	samplingServerURL       string
+	samplingRefreshInterval time.Duration
 }
 
 // Metrics creates a SamplerOption that initializes Metrics on the sampler,
@@ -45,10 +70,18 @@ func (samplerOptions) Logger(logger Logger) SamplerOption {
 	}
 }
 
-// HostPort creates a SamplerOption that sets the host:port of the local
-// agent that contains the sampling strategies.
-func (samplerOptions) HostPort(hostPort string) SamplerOption {
+// SamplingServerURL creates a SamplerOption that sets the sampling server url
+// of the local agent that contains the sampling strategies.
+func (samplerOptions) SamplingServerURL(samplingServerURL string) SamplerOption {
 	return func(o *samplerOptions) {
-		o.hostPort = hostPort
+		o.samplingServerURL = samplingServerURL
+	}
+}
+
+// SamplingRefreshInterval creates a SamplerOption that sets how often the
+// sampler will poll local agent for the appropriate sampling strategy.
+func (samplerOptions) SamplingRefreshInterval(samplingRefreshInterval time.Duration) SamplerOption {
+	return func(o *samplerOptions) {
+		o.samplingRefreshInterval = samplingRefreshInterval
 	}
 }

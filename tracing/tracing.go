@@ -19,9 +19,16 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
+	"golang.org/x/blog/content/context/userip"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"github.com/pilotariak/trinquet/config"
+	"github.com/pilotariak/trinquet/transport"
 )
 
 const (
@@ -53,12 +60,59 @@ func New(conf *config.Configuration) (opentracing.Tracer, error) {
 	return tracer, nil
 }
 
-func GetSpan(ctx context.Context, operationName string) opentracing.Span {
+// func GetSpan(ctx context.Context, operationName string) opentracing.Span {
+// 	parentSpan := opentracing.SpanFromContext(ctx)
+// 	if parentSpan != nil {
+// 		glog.V(2).Infof("Got parent span for service")
+// 	} else {
+// 		parentSpan, ctx = opentracing.StartSpanFromContext(ctx, operationName)
+// 	}
+// 	return parentSpan
+// }
+func GetParentSpan(ctx context.Context, operationName string) opentracing.Span {
 	parentSpan := opentracing.SpanFromContext(ctx)
-	if parentSpan != nil {
-		glog.V(2).Infof("Got parent span for service")
-	} else {
+	if parentSpan == nil {
+		glog.V(2).Infof("Create parent span for service")
 		parentSpan, ctx = opentracing.StartSpanFromContext(ctx, operationName)
 	}
+	if userIP, ok := userip.FromContext(ctx); ok {
+		parentSpan.SetTag("user.remote_ip", userIP.String())
+	}
+	if userID := ctx.Value(transport.UserID); userID != nil {
+		parentSpan.SetTag("user.id", string([]byte(userID.(string))))
+	}
+	if md, ok := metadata.FromContext(ctx); ok {
+		if hostname, ok := md[transport.UserHostname]; ok {
+			parentSpan.SetTag("user.hostname", hostname)
+		}
+		if ip, ok := md[transport.UserIP]; ok {
+			parentSpan.SetTag("user.ip", ip)
+		}
+	}
 	return parentSpan
+}
+func GetChildSpan(span opentracing.Span, operationName string) opentracing.Span {
+	return opentracing.StartSpan(operationName, opentracing.ChildOf(span.Context()))
+}
+
+func SetSpanTags(span opentracing.Span, provider string, url string, method string) {
+	span.SetTag(string(ext.Component), provider)
+	span.SetTag(string(ext.HTTPUrl), url)
+	span.SetTag(string(ext.HTTPMethod), method)
+}
+
+func SetResponse(span opentracing.Span, response string) {
+	span.SetTag("response", response)
+	span.LogFields(log.String("response", response))
+}
+
+func GrpcError(span opentracing.Span, err error) error {
+	glog.V(0).Infof(err.Error())
+	span.LogFields(log.Error(err))
+	return status.Errorf(codes.Internal, err.Error())
+}
+
+func Errorf(span opentracing.Span, err error) error {
+	span.LogFields(log.Error(err))
+	return err
 }

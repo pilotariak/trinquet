@@ -32,7 +32,8 @@ import (
 	"github.com/uber/jaeger-client-go/utils"
 )
 
-type span struct {
+// Span implements opentracing.Span
+type Span struct {
 	sync.RWMutex
 
 	tracer *tracer
@@ -72,6 +73,8 @@ type span struct {
 
 	// The span's "micro-log"
 	logs []opentracing.LogRecord
+
+	observer SpanObserver
 }
 
 // Tag a simple key value wrapper
@@ -80,18 +83,20 @@ type Tag struct {
 	value interface{}
 }
 
-// Sets or changes the operation name.
-func (s *span) SetOperationName(operationName string) opentracing.Span {
+// SetOperationName sets or changes the operation name.
+func (s *Span) SetOperationName(operationName string) opentracing.Span {
 	s.Lock()
 	defer s.Unlock()
 	if s.context.IsSampled() {
 		s.operationName = operationName
 	}
+	s.observer.OnSetOperationName(operationName)
 	return s
 }
 
 // SetTag implements SetTag() of opentracing.Span
-func (s *span) SetTag(key string, value interface{}) opentracing.Span {
+func (s *Span) SetTag(key string, value interface{}) opentracing.Span {
+	s.observer.OnSetTag(key, value)
 	if key == string(ext.SamplingPriority) && setSamplingPriority(s, key, value) {
 		return s
 	}
@@ -103,7 +108,7 @@ func (s *span) SetTag(key string, value interface{}) opentracing.Span {
 	return s
 }
 
-func (s *span) setTagNoLocking(key string, value interface{}) {
+func (s *Span) setTagNoLocking(key string, value interface{}) {
 	handled := false
 	if handler, ok := specialTagHandlers[key]; ok {
 		handled = handler(s, key, value)
@@ -113,7 +118,7 @@ func (s *span) setTagNoLocking(key string, value interface{}) {
 	}
 }
 
-func (s *span) setTracerTags(tags []Tag) {
+func (s *Span) setTracerTags(tags []Tag) {
 	s.Lock()
 	for _, tag := range tags {
 		s.tags = append(s.tags, tag)
@@ -121,7 +126,8 @@ func (s *span) setTracerTags(tags []Tag) {
 	s.Unlock()
 }
 
-func (s *span) LogFields(fields ...log.Field) {
+// LogFields implements opentracing.Span API
+func (s *Span) LogFields(fields ...log.Field) {
 	s.Lock()
 	defer s.Unlock()
 	if !s.context.IsSampled() {
@@ -134,7 +140,8 @@ func (s *span) LogFields(fields ...log.Field) {
 	s.appendLog(lr)
 }
 
-func (s *span) LogKV(alternatingKeyValues ...interface{}) {
+// LogKV implements opentracing.Span API
+func (s *Span) LogKV(alternatingKeyValues ...interface{}) {
 	s.RLock()
 	sampled := s.context.IsSampled()
 	s.RUnlock()
@@ -149,15 +156,18 @@ func (s *span) LogKV(alternatingKeyValues ...interface{}) {
 	s.LogFields(fields...)
 }
 
-func (s *span) LogEvent(event string) {
+// LogEvent implements opentracing.Span API
+func (s *Span) LogEvent(event string) {
 	s.Log(opentracing.LogData{Event: event})
 }
 
-func (s *span) LogEventWithPayload(event string, payload interface{}) {
+// LogEventWithPayload implements opentracing.Span API
+func (s *Span) LogEventWithPayload(event string, payload interface{}) {
 	s.Log(opentracing.LogData{Event: event, Payload: payload})
 }
 
-func (s *span) Log(ld opentracing.LogData) {
+// Log implements opentracing.Span API
+func (s *Span) Log(ld opentracing.LogData) {
 	s.Lock()
 	defer s.Unlock()
 	if s.context.IsSampled() {
@@ -169,13 +179,13 @@ func (s *span) Log(ld opentracing.LogData) {
 }
 
 // this function should only be called while holding a Write lock
-func (s *span) appendLog(lr opentracing.LogRecord) {
+func (s *Span) appendLog(lr opentracing.LogRecord) {
 	// TODO add logic to limit number of logs per span (issue #46)
 	s.logs = append(s.logs, lr)
 }
 
 // SetBaggageItem implements SetBaggageItem() of opentracing.SpanContext
-func (s *span) SetBaggageItem(key, value string) opentracing.Span {
+func (s *Span) SetBaggageItem(key, value string) opentracing.Span {
 	key = normalizeBaggageKey(key)
 	s.Lock()
 	defer s.Unlock()
@@ -184,25 +194,27 @@ func (s *span) SetBaggageItem(key, value string) opentracing.Span {
 }
 
 // BaggageItem implements BaggageItem() of opentracing.SpanContext
-func (s *span) BaggageItem(key string) string {
+func (s *Span) BaggageItem(key string) string {
 	key = normalizeBaggageKey(key)
 	s.RLock()
 	defer s.RUnlock()
 	return s.context.baggage[key]
 }
 
-func (s *span) Finish() {
+// Finish implements opentracing.Span API
+func (s *Span) Finish() {
 	s.FinishWithOptions(opentracing.FinishOptions{})
 }
 
-func (s *span) FinishWithOptions(options opentracing.FinishOptions) {
+// FinishWithOptions implements opentracing.Span API
+func (s *Span) FinishWithOptions(options opentracing.FinishOptions) {
+	if options.FinishTime.IsZero() {
+		options.FinishTime = s.tracer.timeNow()
+	}
+	s.observer.OnFinish(options)
 	s.Lock()
 	if s.context.IsSampled() {
-		finishTime := options.FinishTime
-		if finishTime.IsZero() {
-			finishTime = s.tracer.timeNow()
-		}
-		s.duration = finishTime.Sub(s.startTime)
+		s.duration = options.FinishTime.Sub(s.startTime)
 		// Note: bulk logs are not subject to maxLogsPerSpan limit
 		if options.LogRecords != nil {
 			s.logs = append(s.logs, options.LogRecords...)
@@ -216,42 +228,53 @@ func (s *span) FinishWithOptions(options opentracing.FinishOptions) {
 	s.tracer.reportSpan(s)
 }
 
-func (s *span) Context() opentracing.SpanContext {
+// Context implements opentracing.Span API
+func (s *Span) Context() opentracing.SpanContext {
 	return s.context
 }
 
-func (s *span) Tracer() opentracing.Tracer {
+// Tracer implements opentracing.Span API
+func (s *Span) Tracer() opentracing.Tracer {
 	return s.tracer
 }
 
-func (s *span) String() string {
+func (s *Span) String() string {
+	s.RLock()
+	defer s.RUnlock()
 	return s.context.String()
 }
 
-func (s *span) peerDefined() bool {
+// OperationName allows retrieving current operation name.
+func (s *Span) OperationName() string {
+	s.RLock()
+	defer s.RUnlock()
+	return s.operationName
+}
+
+func (s *Span) peerDefined() bool {
 	return s.peer.ServiceName != "" || s.peer.Ipv4 != 0 || s.peer.Port != 0
 }
 
-func (s *span) isRPC() bool {
+func (s *Span) isRPC() bool {
 	s.RLock()
 	defer s.RUnlock()
 	return s.spanKind == string(ext.SpanKindRPCClientEnum) || s.spanKind == string(ext.SpanKindRPCServerEnum)
 }
 
-func (s *span) isRPCClient() bool {
+func (s *Span) isRPCClient() bool {
 	s.RLock()
 	defer s.RUnlock()
 	return s.spanKind == string(ext.SpanKindRPCClientEnum)
 }
 
-var specialTagHandlers = map[string]func(*span, string, interface{}) bool{
+var specialTagHandlers = map[string]func(*Span, string, interface{}) bool{
 	string(ext.SpanKind):     setSpanKind,
 	string(ext.PeerHostIPv4): setPeerIPv4,
 	string(ext.PeerPort):     setPeerPort,
 	string(ext.PeerService):  setPeerService,
 }
 
-func setSpanKind(s *span, key string, value interface{}) bool {
+func setSpanKind(s *Span, key string, value interface{}) bool {
 	if val, ok := value.(string); ok {
 		s.spanKind = val
 		return true
@@ -263,7 +286,7 @@ func setSpanKind(s *span, key string, value interface{}) bool {
 	return false
 }
 
-func setPeerIPv4(s *span, key string, value interface{}) bool {
+func setPeerIPv4(s *Span, key string, value interface{}) bool {
 	if val, ok := value.(string); ok {
 		if ip, err := utils.ParseIPToUint32(val); err == nil {
 			s.peer.Ipv4 = int32(ip)
@@ -281,7 +304,7 @@ func setPeerIPv4(s *span, key string, value interface{}) bool {
 	return false
 }
 
-func setPeerPort(s *span, key string, value interface{}) bool {
+func setPeerPort(s *Span, key string, value interface{}) bool {
 	if val, ok := value.(string); ok {
 		if port, err := utils.ParsePort(val); err == nil {
 			s.peer.Port = int16(port)
@@ -299,7 +322,7 @@ func setPeerPort(s *span, key string, value interface{}) bool {
 	return false
 }
 
-func setPeerService(s *span, key string, value interface{}) bool {
+func setPeerService(s *Span, key string, value interface{}) bool {
 	if val, ok := value.(string); ok {
 		s.peer.ServiceName = val
 		return true
@@ -307,7 +330,7 @@ func setPeerService(s *span, key string, value interface{}) bool {
 	return false
 }
 
-func setSamplingPriority(s *span, key string, value interface{}) bool {
+func setSamplingPriority(s *Span, key string, value interface{}) bool {
 	s.Lock()
 	defer s.Unlock()
 	if val, ok := value.(uint16); ok {

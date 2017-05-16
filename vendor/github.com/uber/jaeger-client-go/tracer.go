@@ -31,6 +31,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 
+	"github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-client-go/utils"
 )
 
@@ -41,13 +42,14 @@ type tracer struct {
 	sampler  Sampler
 	reporter Reporter
 	metrics  Metrics
-	logger   Logger
+	logger   log.Logger
 
 	timeNow      func() time.Time
 	randomNumber func() uint64
 
 	options struct {
 		poolSpans bool
+		gen128Bit bool // whether to generate 128bit trace IDs
 		// more options to come
 	}
 	// pool for Span objects
@@ -55,6 +57,8 @@ type tracer struct {
 
 	injectors  map[interface{}]Injector
 	extractors map[interface{}]Extractor
+
+	observer observer
 
 	tags []Tag
 }
@@ -74,9 +78,9 @@ func NewTracer(
 		reporter:    reporter,
 		injectors:   make(map[interface{}]Injector),
 		extractors:  make(map[interface{}]Extractor),
-		metrics:     *NewMetrics(NullStatsReporter, nil),
+		metrics:     *NewNullMetrics(),
 		spanPool: sync.Pool{New: func() interface{} {
-			return &span{}
+			return &Span{}
 		}},
 	}
 
@@ -116,7 +120,7 @@ func NewTracer(
 		t.timeNow = time.Now
 	}
 	if t.logger == nil {
-		t.logger = NullLogger
+		t.logger = log.NullLogger
 	}
 	// TODO once on the new data model, support both v4 and v6 IPs
 	if t.hostIPv4 == 0 {
@@ -150,9 +154,8 @@ func (t *tracer) startSpanWithOptions(
 	operationName string,
 	options opentracing.StartSpanOptions,
 ) opentracing.Span {
-	startTime := options.StartTime
-	if startTime.IsZero() {
-		startTime = t.timeNow()
+	if options.StartTime.IsZero() {
+		options.StartTime = t.timeNow()
 	}
 
 	var parent SpanContext
@@ -185,8 +188,11 @@ func (t *tracer) startSpanWithOptions(
 	newTrace := false
 	if !hasParent || !parent.IsValid() {
 		newTrace = true
-		ctx.traceID = t.randomID()
-		ctx.spanID = ctx.traceID
+		ctx.traceID.Low = t.randomID()
+		if t.options.gen128Bit {
+			ctx.traceID.High = t.randomID()
+		}
+		ctx.spanID = SpanID(ctx.traceID.Low)
 		ctx.parentID = 0
 		ctx.flags = byte(0)
 		if hasParent && parent.isDebugIDContainerOnly() {
@@ -203,7 +209,7 @@ func (t *tracer) startSpanWithOptions(
 			ctx.spanID = parent.spanID
 			ctx.parentID = parent.parentID
 		} else {
-			ctx.spanID = t.randomID()
+			ctx.spanID = SpanID(t.randomID())
 			ctx.parentID = parent.spanID
 		}
 		ctx.flags = parent.flags
@@ -220,10 +226,11 @@ func (t *tracer) startSpanWithOptions(
 
 	sp := t.newSpan()
 	sp.context = ctx
+	sp.observer = t.observer.OnStartSpan(operationName, options)
 	return t.startSpanInternal(
 		sp,
 		operationName,
-		startTime,
+		options.StartTime,
 		samplerTags,
 		options.Tags,
 		newTrace,
@@ -261,13 +268,13 @@ func (t *tracer) Close() error {
 	return nil
 }
 
-// getSpan retrieves an instance of a clean Span object.
+// newSpan returns an instance of a clean Span object.
 // If options.PoolSpans is true, the spans are retrieved from an object pool.
-func (t *tracer) newSpan() *span {
+func (t *tracer) newSpan() *Span {
 	if !t.options.poolSpans {
-		return &span{}
+		return &Span{}
 	}
-	sp := t.spanPool.Get().(*span)
+	sp := t.spanPool.Get().(*Span)
 	sp.context = emptyContext
 	sp.tracer = nil
 	sp.tags = nil
@@ -276,14 +283,14 @@ func (t *tracer) newSpan() *span {
 }
 
 func (t *tracer) startSpanInternal(
-	sp *span,
+	sp *Span,
 	operationName string,
 	startTime time.Time,
 	internalTags []Tag,
 	tags opentracing.Tags,
 	newTrace bool,
 	rpcServer bool,
-) opentracing.Span {
+) *Span {
 	sp.tracer = t
 	sp.operationName = operationName
 	sp.startTime = startTime
@@ -293,6 +300,7 @@ func (t *tracer) startSpanInternal(
 		sp.tags = make([]Tag, len(internalTags), len(tags)+len(internalTags))
 		copy(sp.tags, internalTags)
 		for k, v := range tags {
+			sp.observer.OnSetTag(k, v)
 			if k == string(ext.SamplingPriority) && setSamplingPriority(sp, k, v) {
 				continue
 			}
@@ -323,7 +331,7 @@ func (t *tracer) startSpanInternal(
 	return sp
 }
 
-func (t *tracer) reportSpan(sp *span) {
+func (t *tracer) reportSpan(sp *Span) {
 	t.metrics.SpansFinished.Inc(1)
 	if sp.context.IsSampled() {
 		if sp.firstInProcess {

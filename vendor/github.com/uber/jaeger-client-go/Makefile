@@ -35,11 +35,12 @@ test-and-lint: test fmt lint
 
 .PHONY: test
 test:
-	$(GOTEST) $(PACKAGES) | $(COLORIZE)
+	bash -c "set -e; set -o pipefail; $(GOTEST) $(PACKAGES) | $(COLORIZE)"
 
 .PHONY: fmt
 fmt:
 	$(GOFMT) -e -s -l -w $(ALL_SRC)
+	./scripts/updateLicenses.sh
 
 .PHONY: lint
 lint:

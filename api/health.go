@@ -1,66 +1,107 @@
-// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (c) 2017 Orange Applications for Business.
 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     http://www.apache.org/licenses/LICENSE-2.0
-
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// This software is confidential and proprietary information of
+// Orange Applications for Business. You shall not disclose such Confidential
+// Information and shall use it only in accordance with the terms of the
+// agreement you entecolors.red into. Unauthorized copying of this file, via any
+// medium is strictly prohibited.
 
 package api
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/golang/glog"
+	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
+
+	"github.com/pilotariak/trinquet/auth"
+	"github.com/pilotariak/trinquet/config"
+	"github.com/pilotariak/trinquet/messaging"
+	"github.com/pilotariak/trinquet/pb/health"
+	"github.com/pilotariak/trinquet/pkg/rbac"
+	"github.com/pilotariak/trinquet/tracing"
+	"github.com/pilotariak/trinquet/transport"
 )
 
-// HealthHandler define a service
-type HealthHandler struct {
-	HealthClient healthpb.HealthClient
+type HealthService struct {
+	Authentication auth.Authentication
+	HealthUser     string
+	HealthKey      string
+	URI            string
+	Services       []string
 }
 
-func NewHealthHandler(uri string) (*HealthHandler, error) {
-	conn, err := grpc.Dial(uri, grpc.WithInsecure())
+func NewHealthService(conf *config.Configuration, uri string, services []string) (*HealthService, error) {
+	glog.V(2).Info("Create the health service")
+	rbac.AddRoles("health", "HealthService", map[string][]string{
+		"Status": []string{rbac.AdminRole},
+	})
+	authentication, err := auth.New(conf)
 	if err != nil {
 		return nil, err
 	}
-	client := healthpb.NewHealthClient(conn)
-	return &HealthHandler{
-		HealthClient: client,
+	return &HealthService{
+		// Conf:     conf,
+		Authentication: authentication,
+		HealthKey:      conf.Auth.Vault.HealthKey,
+		HealthUser:     conf.Auth.Vault.HealthUser,
+		URI:            uri,
+		Services:       services,
 	}, nil
 }
 
-// HealthResponse contains current health status.
-type HealthResponse struct {
-	Status   string            `json:"status"`
-	Gateway  string            `json:"gateway"`
-	Services map[string]string `json:"services"`
-}
+func (service *HealthService) Status(ctx context.Context, req *health.StatusRequest) (*health.StatusResponse, error) {
+	glog.V(1).Info("Check Health services")
 
-func (handler *HealthHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	glog.V(1).Infof("[Health] handler")
-	response := HealthResponse{
-		Services: map[string]string{},
-	}
-	resp, err := handler.HealthClient.Check(context.Background(), &healthpb.HealthCheckRequest{Service: "LeagueService"})
+	span := tracing.GetParentSpan(ctx, messaging.HealthEvent)
+	defer span.Finish()
+
+	conn, err := grpc.Dial(service.URI, grpc.WithInsecure())
 	if err != nil {
-		response.Services["LeagueService"] = fmt.Sprintf("KO: %s", err)
-	} else {
-		response.Services["LeagueService"] = fmt.Sprintf("%s", resp.Status)
+		return nil, err
 	}
-	response.Status = "OK"
-	response.Gateway = "OK"
-	json.NewEncoder(w).Encode(response)
-	return
+
+	client := healthpb.NewHealthClient(conn)
+	token, err := service.Authentication.Credentials(ctx, span, service.HealthUser, service.HealthKey)
+	if err != nil {
+		return nil, err
+	}
+	glog.V(2).Infof("Auth token: %s", token)
+	md := metadata.New(map[string]string{
+		transport.Authorization: auth.GetAuthenticationHeader(service.Authentication, token),
+		transport.UserID:        service.HealthUser,
+	})
+	newCtx := metadata.NewContext(ctx, md)
+
+	servicesStatus := []*health.ServiceStatus{}
+	for _, service := range service.Services {
+		glog.V(2).Infof("Check health service: %s", service)
+		resp, err := client.Check(newCtx, &healthpb.HealthCheckRequest{
+			Service: service,
+		})
+		if err != nil {
+			servicesStatus = append(servicesStatus, &health.ServiceStatus{
+				Name:   service,
+				Status: "KO",
+				Text:   err.Error(),
+			})
+		} else {
+			servicesStatus = append(servicesStatus, &health.ServiceStatus{
+				Name:   service,
+				Status: "OK",
+				Text:   fmt.Sprintf("%s", resp.Status),
+			})
+		}
+	}
+
+	resp := &health.StatusResponse{}
+	resp.Services = servicesStatus
+
+	glog.V(0).Infof("Health response: %s", resp)
+	span.LogFields(log.Object("response", resp))
+	return resp, nil
 }

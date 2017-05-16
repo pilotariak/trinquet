@@ -63,8 +63,8 @@ clean: ## Cleanup
 	@echo -e "$(OK_COLOR)[$(APP)] Cleanup$(NO_COLOR)"
 	@rm -fr trinquetctl trinquetd *.tar.gz
 
-.PHONY: init
-init: ## Install requirements
+.PHONY: tools
+tools: ## Install tools
 	@echo -e "$(OK_COLOR)[$(APP)] Install requirements$(NO_COLOR)"
 	@go get -u github.com/golang/glog
 	@go get -u github.com/kardianos/govendor
@@ -72,19 +72,22 @@ init: ## Install requirements
 	@go get -u github.com/golang/lint/golint
 	@go get -u github.com/kisielk/errcheck
 	@go get -u github.com/mitchellh/gox
-	@wget https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
+	@go get -u gopkg.in/mikedanese/gazel.v17/gazel
+	@wget https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip
+
+.PHONY: proto
+proto: ## Install protocol buffer tools
+	@go get -u github.com/golang/protobuf/protoc-gen-go
+	@go get -u github.com/golang/protobuf/proto
+	@go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/
+	@go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+
+init: tools proto ## Install requirements
 
 .PHONY: deps
 deps: ## Install dependencies
 	@echo -e "$(OK_COLOR)[$(APP)] Update dependencies$(NO_COLOR)"
 	@govendor update
-
-.PHONY: proto
-proto: ## Install protocol buffer tools
-	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-	@govendor fetch github.com/golang/protobuf/protoc-gen-go
-	@govendor fetch google.golang.org/grpc
 
 .PHONY: pb
 pb: ## Generate Protobuf
@@ -94,13 +97,25 @@ pb: ## Generate Protobuf
 swagger: ## Generate Swagger
 	go-bindata-assetfs -pkg swagger third_party/swagger-ui/... && mv bindata_assetfs.go pkg/ui/swagger/
 
+.PHONY: changelog
+changelog:
+	@$(GO) generate -x ./pkg/static/
+
+.PHONY: doc
+doc: ## Generate documentation
+	@echo -e "$(OK_COLOR)[$(APP)] Documentation $(NO_COLOR)"
+	docker run -it -v `pwd`/doc:/documents/ rochdev/alpine-asciidoctor asciidoctor index.adoc -a stylesheet=dt-oab.css -a stylesdir=/documents/stylesheets -d book -a toc2
+
+.PHONY: webdoc
+webdoc: doc
+	@$(GO) generate -x ./pkg/webdoc/
+
 .PHONY: build
 build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
-	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
-#	@$(GO) build -o trinquetctl ./ctl/
-#	@$(GO) build -o trinquetd ./server
+	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/cmd/trinquetd
+	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/cmd/trinquetctl
+	@$(GO) build -o trinquetadm github.com/pilotariak/trinquet/cmd/trinquetadm
 
 .PHONY: test
 test: ## Launch unit tests

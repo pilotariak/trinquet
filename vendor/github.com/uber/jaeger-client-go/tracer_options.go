@@ -20,7 +20,9 @@
 
 package jaeger
 
-import "time"
+import (
+	"time"
+)
 
 // TracerOption is a function that sets some option on the tracer
 type TracerOption func(tracer *tracer)
@@ -88,5 +90,11 @@ func (tracerOptions) Injector(format interface{}, injector Injector) TracerOptio
 func (tracerOptions) Extractor(format interface{}, extractor Extractor) TracerOption {
 	return func(tracer *tracer) {
 		tracer.extractors[format] = extractor
+	}
+}
+
+func (tracerOptions) Observer(observer Observer) TracerOption {
+	return func(tracer *tracer) {
+		tracer.observer.append(observer)
 	}
 }

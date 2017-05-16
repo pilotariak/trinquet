@@ -7,20 +7,49 @@
 # medium is strictly prohibited.
 
 # generate the gRPC code
-protoc -I/usr/local/include -I. -I$GOPATH/src -I../vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --go_out=Mgoogle/api/annotations.proto=github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api,plugins=grpc:. *.proto
 
-# generate the JSON interface code
-protoc -I/usr/local/include -I. -I$GOPATH/src -I../vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. health.proto
+function generate_grpcgw {
+    pushd $1
+    rm -rf *.pb.go
+    protoc -I/usr/local/include \
+           -I. -I${GOPATH}/src \
+           -I../../vendor/github.com/googleapis/googleapis \
+           --go_out=plugins=grpc:. *.proto
 
-# generate the swagger definitions
-protoc -I/usr/local/include -I. -I$GOPATH/src -I../vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --swagger_out=logtostderr=true:. health.proto
+    rm -rf *.pb.gw.go
+    protoc -I /usr/local/include -I . \
+           -I ${GOPATH}/src \
+           -I../../vendor/github.com/googleapis/googleapis \
+           --grpc-gateway_out=logtostderr=true:. *.proto
 
-# generate the JSON interface code
-protoc -I/usr/local/include -I. -I$GOPATH/src -I../vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. league.proto
+    rm -rf ../swagger/*.swagger.json
+    protoc -I /usr/local/include -I . \
+           -I ${GOPATH}/src \
+           -I../../vendor/github.com/googleapis/googleapis \
+           --swagger_out=logtostderr=true:. *.proto
+    popd
+}
 
-# generate the swagger definitions
-protoc -I/usr/local/include -I. -I$GOPATH/src -I../vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --swagger_out=logtostderr=true:. league.proto
+function generate_grpc {
+    pushd $1
+    rm -rf *.pb.go
+    protoc -I/usr/local/include \
+           -I. -I${GOPATH}/src \
+           -I../../vendor/github.com/googleapis/googleapis \
+           --go_out=plugins=grpc:. *.proto
+    popd
+}
 
-# -----------------------------------------------------------------------
 
-go run swagger/swagger.go . > swagger/api.swagger.json
+function generate_swagger {
+    find . -name "*.json" | xargs -I '{}' mv '{}' swagger/
+    rm -f swagger/api.swagger.json
+    ls swagger
+    go run swagger/swagger.go swagger > swagger/api.swagger.json
+}
+
+generate_grpcgw v1beta
+generate_grpc health
+generate_grpc info
+
+generate_swagger

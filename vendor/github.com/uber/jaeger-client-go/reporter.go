@@ -27,6 +27,7 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 
+	"github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-client-go/thrift-gen/zipkincore"
 	"github.com/uber/jaeger-client-go/transport"
 )
@@ -34,7 +35,7 @@ import (
 // Reporter is called by the tracer when a span is completed to report the span to the tracing collector.
 type Reporter interface {
 	// Report submits a new span to collectors, possibly asynchronously and/or with buffering.
-	Report(span *span)
+	Report(span *Span)
 
 	// Close does a clean shutdown of the reporter, flushing any traces that may be buffered in memory.
 	Close()
@@ -50,7 +51,7 @@ func NewNullReporter() Reporter {
 }
 
 // Report implements Report() method of Reporter by doing nothing.
-func (r *nullReporter) Report(span *span) {
+func (r *nullReporter) Report(span *Span) {
 	// no-op
 }
 
@@ -71,7 +72,7 @@ func NewLoggingReporter(logger Logger) Reporter {
 }
 
 // Report implements Report() method of Reporter by logging the span to the logger.
-func (r *loggingReporter) Report(span *span) {
+func (r *loggingReporter) Report(span *Span) {
 	r.logger.Infof("Reporting span %+v", span)
 }
 
@@ -97,7 +98,7 @@ func NewInMemoryReporter() *InMemoryReporter {
 }
 
 // Report implements Report() method of Reporter by storing the span in the buffer.
-func (r *InMemoryReporter) Report(span *span) {
+func (r *InMemoryReporter) Report(span *Span) {
 	r.lock.Lock()
 	r.spans = append(r.spans, span)
 	r.lock.Unlock()
@@ -143,7 +144,7 @@ func NewCompositeReporter(reporters ...Reporter) Reporter {
 }
 
 // Report implements Report() method of Reporter by delegating to each underlying reporter.
-func (r *compositeReporter) Report(span *span) {
+func (r *compositeReporter) Report(span *Span) {
 	for _, reporter := range r.reporters {
 		reporter.Report(span)
 	}
@@ -164,7 +165,7 @@ const (
 )
 
 type remoteReporter struct {
-	ReporterOptions
+	reporterOptions
 	sender       transport.Transport
 	queue        chan *zipkincore.Span
 	queueLength  int64 // signed because metric's gauge is signed
@@ -172,41 +173,29 @@ type remoteReporter struct {
 	flushSignal  chan *sync.WaitGroup
 }
 
-// ReporterOptions control behavior of the reporter
-type ReporterOptions struct {
-	// QueueSize is the size of internal queue where reported spans are stored before they are processed in the background
-	QueueSize int
-	// BufferFlushInterval is how often the buffer is force-flushed, even if it's not full
-	BufferFlushInterval time.Duration
-	// Logger is used to log errors of span submissions
-	Logger Logger
-	// Metrics is used to record runtime stats
-	Metrics *Metrics
-}
-
 // NewRemoteReporter creates a new reporter that sends spans out of process by means of Sender
-func NewRemoteReporter(sender transport.Transport, options *ReporterOptions) Reporter {
-	if options == nil {
-		options = &ReporterOptions{}
+func NewRemoteReporter(sender transport.Transport, opts ...ReporterOption) Reporter {
+	options := reporterOptions{}
+	for _, option := range opts {
+		option(&options)
 	}
-	if options.QueueSize <= 0 {
-		options.QueueSize = defaultQueueSize
+	if options.bufferFlushInterval <= 0 {
+		options.bufferFlushInterval = defaultBufferFlushInterval
 	}
-	if options.BufferFlushInterval <= 0 {
-		options.BufferFlushInterval = defaultBufferFlushInterval
+	if options.logger == nil {
+		options.logger = log.NullLogger
 	}
-	if options.Logger == nil {
-		options.Logger = NullLogger
+	if options.metrics == nil {
+		options.metrics = NewNullMetrics()
 	}
-	if options.Metrics == nil {
-		options.Metrics = NewMetrics(NullStatsReporter, nil)
+	if options.queueSize <= 0 {
+		options.queueSize = defaultQueueSize
 	}
-
 	reporter := &remoteReporter{
-		ReporterOptions: *options,
+		reporterOptions: options,
 		sender:          sender,
-		queue:           make(chan *zipkincore.Span, options.QueueSize),
 		flushSignal:     make(chan *sync.WaitGroup),
+		queue:           make(chan *zipkincore.Span, options.queueSize),
 	}
 	go reporter.processQueue()
 	return reporter
@@ -214,13 +203,13 @@ func NewRemoteReporter(sender transport.Transport, options *ReporterOptions) Rep
 
 // Report implements Report() method of Reporter.
 // It passes the span to a background go-routine for submission to Jaeger.
-func (r *remoteReporter) Report(span *span) {
+func (r *remoteReporter) Report(span *Span) {
 	thriftSpan := buildThriftSpan(span)
 	select {
 	case r.queue <- thriftSpan:
 		atomic.AddInt64(&r.queueLength, 1)
 	default:
-		r.Metrics.ReporterDropped.Inc(1)
+		r.metrics.ReporterDropped.Inc(1)
 	}
 }
 
@@ -237,19 +226,19 @@ func (r *remoteReporter) Close() {
 // Buffer also gets flushed automatically every batchFlushInterval seconds, just in case the tracer stopped
 // reporting new spans.
 func (r *remoteReporter) processQueue() {
-	timer := time.NewTicker(r.BufferFlushInterval)
+	timer := time.NewTicker(r.bufferFlushInterval)
 	for {
 		select {
 		case span, ok := <-r.queue:
 			if ok {
 				atomic.AddInt64(&r.queueLength, -1)
 				if flushed, err := r.sender.Append(span); err != nil {
-					r.Metrics.ReporterFailure.Inc(int64(flushed))
-					r.Logger.Error(err.Error())
+					r.metrics.ReporterFailure.Inc(int64(flushed))
+					r.logger.Error(err.Error())
 				} else if flushed > 0 {
-					r.Metrics.ReporterSuccess.Inc(int64(flushed))
+					r.metrics.ReporterSuccess.Inc(int64(flushed))
 					// to reduce the number of gauge stats, we only emit queue length on flush
-					r.Metrics.ReporterQueueLength.Update(atomic.LoadInt64(&r.queueLength))
+					r.metrics.ReporterQueueLength.Update(atomic.LoadInt64(&r.queueLength))
 				}
 			} else {
 				// queue closed
@@ -270,9 +259,9 @@ func (r *remoteReporter) processQueue() {
 // flush causes the Sender to flush its accumulated spans and clear the buffer
 func (r *remoteReporter) flush() {
 	if flushed, err := r.sender.Flush(); err != nil {
-		r.Metrics.ReporterFailure.Inc(int64(flushed))
-		r.Logger.Error(err.Error())
+		r.metrics.ReporterFailure.Inc(int64(flushed))
+		r.logger.Error(err.Error())
 	} else if flushed > 0 {
-		r.Metrics.ReporterSuccess.Inc(int64(flushed))
+		r.metrics.ReporterSuccess.Inc(int64(flushed))
 	}
 }

@@ -1,0 +1,68 @@
+package cmd
+
+import (
+	goflag "flag"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+
+	"github.com/spf13/cobra"
+	"google.golang.org/grpc/grpclog"
+	// init glog to get its flags
+	_ "github.com/golang/glog"
+
+	"github.com/pilotariak/trinquet/cmd/utils"
+)
+
+var (
+	cliName           = "trinquetadm"
+	helpMessage       = "Trinquetadm - The admin CLI for Trinquet"
+	completionExample = `
+               # Load the trinquetadm completion code for bash into the current shell
+               source <(trinquetadm completion bash)
+
+               # Write bash completion code to a file and source if from .bash_profile
+               trinquetadm completion bash > ~/.trinquet/completion.bash.inc
+               printf "\n# Trinquetadm shell completion\nsource '$HOME/.trinquet/completion.bash.inc'\n" >> $HOME/.bash_profile
+               source $HOME/.bash_profile
+
+               # Load the trinquetadm completion code for zsh[1] into the current shell
+               source <(trinquetadm completion zsh)`
+)
+
+func init() {
+	// Tell gRPC not to log to console.
+	grpclog.SetLogger(log.New(ioutil.Discard, "", log.LstdFlags))
+}
+
+// NewDiabloadmCommand creates the `diabloadm` command and its nested children.
+func NewDiabloadmCommand(out io.Writer) *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "diabloadm",
+		Short: "command-line tool to manage a Trinquet server",
+		Long:  `Diabloadm is a command-line tool to manage a Trinquet server.`,
+	}
+	rootCmd.AddCommand(
+		newVersionCmd(out),
+		utils.NewCompletionCommand(out, completionExample),
+	)
+	cobra.EnablePrefixMatching = true
+	// add glog flags
+	rootCmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	// https://github.com/kubernetes/dns/pull/27/files
+	goflag.CommandLine.Parse([]string{})
+
+	return rootCmd
+}
+
+// Execute adds all child commands to the root command sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
+	cmd := NewDiabloadmCommand(os.Stdout)
+	if err := cmd.Execute(); err != nil {
+		fmt.Println(utils.RedOut(err))
+		os.Exit(1)
+	}
+}

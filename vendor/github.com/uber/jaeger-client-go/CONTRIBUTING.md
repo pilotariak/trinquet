@@ -32,6 +32,18 @@ pull request is most likely to be accepted if it:
 * Has a [good commit
   message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 
+## Cutting a Release
+
+1. Create a PR "Preparing for release X.Y.Z" against master branch
+    * Alter CHANGELOG.md from `<placeholder_version> (unreleased)` to `<X.Y.Z> (YYYY-MM-DD)`
+    * Update `JaegerClientVersion` in constants.go to `Go-X.Y.Z`
+2. Create a release "Release X.Y.Z" on Github
+    * Create Tag `vX.Y.Z`
+    * Copy CHANGELOG.md into the release notes
+3. Create a PR "Back to development" against master branch
+    * Add `<next_version> (unreleased)` to CHANGELOG.md
+    * Update `JaegerClientVersion` in constants.go to `Go-<next_version>dev`
+
 ## License
 
 By contributing your code, you agree to license your contribution under the terms
@@ -40,7 +52,7 @@ of the MIT License: https://github.com/uber/jaeger-client-go/blob/master/LICENSE
 If you are adding a new file it should have a header like below.
 
 ```
-// Copyright (c) 2016 Uber Technologies, Inc.
+// Copyright (c) 2017 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

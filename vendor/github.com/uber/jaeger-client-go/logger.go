@@ -22,6 +22,8 @@ package jaeger
 
 import "log"
 
+// NB This will be deprecated in 3.0.0, please use jaeger-client-go/log/logger instead.
+
 // Logger provides an abstract interface for logging from Reporters.
 // Applications can provide their own implementation of this interface to adapt
 // reporters logging to whatever logging library they prefer (stdlib log,

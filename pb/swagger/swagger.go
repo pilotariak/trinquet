@@ -48,6 +48,9 @@ For more information about the usage of the Trinquet REST API, see
 		log.Fatal(err)
 	}
 	for _, fileInfo := range fileInfos {
+		if fileInfo.Name() == "api.swagger.json" {
+			continue
+		}
 		if !strings.HasSuffix(fileInfo.Name(), ".swagger.json") {
 			continue
 		}

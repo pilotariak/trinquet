@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ type Configuration struct {
 	API     *APIConfiguration
 	BoltDB  *BoltDBConfiguration
 	Tracing *TracingConfiguration
+	Auth    *AuthConfiguration
 }
 
 // New returns a Configuration with default values
@@ -35,6 +36,7 @@ func New() *Configuration {
 		BoltDB:  &BoltDBConfiguration{},
 		API:     &APIConfiguration{},
 		Tracing: &TracingConfiguration{},
+		Auth:    &AuthConfiguration{},
 	}
 }
 
@@ -80,4 +82,17 @@ type TracingConfiguration struct {
 	Zipkin  *ZipkinConfiguration
 	Appdash *AppdashConfiguration
 	Jaeger  *JaegerConfiguration
+}
+
+type AuthConfiguration struct {
+	Name  string
+	Vault *VaultConfiguration
+}
+
+type VaultConfiguration struct {
+	Address    string
+	Roleid     string
+	Secretid   string
+	HealthUser string `toml:"healthuser"`
+	HealthKey  string `toml:"healthkey"`
 }

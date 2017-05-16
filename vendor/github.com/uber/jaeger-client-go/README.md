@@ -1,36 +1,14 @@
-[![GoDoc][doc-img]][doc] [![Build Status][ci-img]][ci] [![Coverage Status][cov-img]][cov] [![OpenTracing Compatible][ot-img]][ot-url]
+[![GoDoc][doc-img]][doc] [![Build Status][ci-img]][ci] [![Coverage Status][cov-img]][cov] [![OpenTracing 1.0 Enabled][ot-img]][ot-url]
 
 # Jaeger Bindings for Go OpenTracing API
 
 This is a client side library that implements an
-[OpenTracing](http://opentracing.io) Tracer, with Zipkin-compatible
-data model.
+[OpenTracing](http://opentracing.io) Tracer, 
+with Zipkin-compatible data model.
 
 ## Initialization
 
-```go
-import (
-    "github.com/opentracing/opentracing-go"
-    "github.com/uber/jaeger-client-go/config"
-)
-
-type AppConfig struct {
-    ...
-    Tracing config.Configuration
-    ...
-}
-
-func main() {
-    cfg := loadAppConfig() // e.g. from a yaml file
-
-    tracer, closer, err := cfg.Tracing.New("your-service-name", nil)
-    // check err
-    defer closer.Close()
-
-    opentracing.InitGlobalTracer(tracer)
-    ...
-}
-```
+See [tracer initialization](https://godoc.org/github.com/uber/jaeger-client-go/config#pkg-examples).
 
 ### Metrics & Monitoring
 
@@ -113,13 +91,13 @@ are available:
      sampling rate.
   1. `RateLimitingSampler` can be used to allow only a certain fixed
      number of traces to be sampled per second.
-     
+
 ### Baggage Injection
 
 The OpenTracing spec allows for [baggage](http://opentracing.io/spec/#baggage),
 which are key value pairs that are added to the span context and propagated
 throughout the trace.
-An external process can inject baggage by setting the special 
+An external process can inject baggage by setting the special
 HTTP Header `jaeger-baggage` on a request
 
 ```sh
@@ -130,7 +108,18 @@ Baggage can also be programatically set inside your service by doing
 the following
 
 ```go
-span.SetBaggageItem("key", "value")
+if span := opentracing.SpanFromContext(ctx); span != nil {
+    span.SetBaggageItem("key", "value")
+}
+```
+
+Another service downstream of that can retrieve the baggage in a similar way:
+
+```go
+if span := opentracing.SpanFromContext(ctx); span != nil {
+    val := span.BaggageItem("key")
+    println(val)
+}
 ```
 
 ### Debug Traces (Forced Sampling)
@@ -145,7 +134,7 @@ import (
     "github.com/opentracing/opentracing-go"
     "github.com/opentracing/opentracing-go/ext"
 )
-       
+
 span := opentracing.SpanFromContext(ctx)
 ext.SamplingPriority.Set(span, 1)    
 ```
@@ -162,7 +151,7 @@ curl -H "jaeger-debug-id: some-correlation-id" http://myhost.com
 When Jaeger sees this header in the request that otherwise has no
 tracing context, it ensures that the new trace started for this
 request will be sampled in the "debug" mode (meaning it should survive
-all downsampling that might happen in the collection pipeline), and the 
+all downsampling that might happen in the collection pipeline), and the
 root span will have a tag as if this statement was executed:
 
 ```go
@@ -171,17 +160,23 @@ span.SetTag("jaeger-debug-id", "some-correlation-id")
 
 This allows using Jaeger UI to find the trace by this tag.
 
+### Zipkin HTTP B3 compatible header propagation
+
+Jaeger Tracer supports Zipkin B3 Propagation HTTP headers, which are used
+by a lot of Zipkin tracers. This means that you can use Jaeger in conjunction with e.g. [these OpenZipkin tracers](https://github.com/openzipkin).
+
+However it is not the default propagation format, see [here](zipkin/README.md#NewZipkinB3HTTPHeaderPropagator) how to set it up.
+
 ## License
-  
+
   [The MIT License](LICENSE).
 
-  
+
 [doc-img]: https://godoc.org/github.com/uber/jaeger-client-go?status.svg
 [doc]: https://godoc.org/github.com/uber/jaeger-client-go
 [ci-img]: https://travis-ci.org/uber/jaeger-client-go.svg?branch=master
 [ci]: https://travis-ci.org/uber/jaeger-client-go
 [cov-img]: https://coveralls.io/repos/uber/jaeger-client-go/badge.svg?branch=master&service=github
 [cov]: https://coveralls.io/github/uber/jaeger-client-go?branch=master
-[ot-img]: https://github.com/opentracing/contrib/blob/master/badge/OpenTracing-enabled-blue.png
+[ot-img]: https://img.shields.io/badge/OpenTracing--1.0-enabled-blue.svg
 [ot-url]: http://opentracing.io
-
