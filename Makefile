@@ -141,7 +141,9 @@ coverage: ## Launch code coverage
 
 gox: ## Make all binaries
 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
-	$(GOX) $(GOX_ARGS) github.com/pilotariak/trinquet/
+	$(GOX) -output=trinquetctl-$(VERSION)_{{.OS}}_{{.Arch}} -osarch="linux/amd64 darwin/amd64 windows/amd64" github.com/pilotariak/trinquet/cmd/trinquetctl
+	$(GOX) -output=trinquetadm-$(VERSION)_{{.OS}}_{{.Arch}} -osarch="linux/amd64 darwin/amd64 windows/amd64" github.com/pilotariak/trinquet/cmd/trinquetadm
+	$(GOX) -output=trinquetd-$(VERSION)_{{.OS}}_{{.Arch}} -osarch="linux/amd64 darwin/amd64 windows/amd64" github.com/pilotariak/trinquet/cmd/trinquetd
 
 .PHONY: binaries
 binaries: ## Upload all binaries
