@@ -51,16 +51,16 @@ func init() {
 	grpclog.SetLogger(log.New(ioutil.Discard, "", log.LstdFlags))
 }
 
-// NewDiabloadmCommand creates the `diabloadm` command and its nested children.
-func NewDiabloadmCommand(out io.Writer) *cobra.Command {
+// NewTrinquetadmCommand creates the `diabloadm` command and its nested children.
+func NewTrinquetadmCommand(out io.Writer) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "diabloadm",
+		Use:   "trinquetadm",
 		Short: "command-line tool to manage a Trinquet server",
-		Long:  `Diabloadm is a command-line tool to manage a Trinquet server.`,
+		Long:  `Trinquetadm is a command-line tool to manage a Trinquet server.`,
 	}
 	rootCmd.AddCommand(
 		newHealthCmd(out),
-		newVersionCmd(out),
+		utils.NewVersionCmd(out, helpMessage),
 		utils.NewCompletionCommand(out, completionExample),
 	)
 	cobra.EnablePrefixMatching = true
@@ -75,7 +75,7 @@ func NewDiabloadmCommand(out io.Writer) *cobra.Command {
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	cmd := NewDiabloadmCommand(os.Stdout)
+	cmd := NewTrinquetadmCommand(os.Stdout)
 	if err := cmd.Execute(); err != nil {
 		fmt.Println(utils.RedOut(err))
 		os.Exit(1)

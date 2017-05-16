@@ -37,13 +37,13 @@ func NewVersionCmd(out io.Writer, help string) *cobra.Command {
 		Short: "Print the version number",
 		Long:  `All software has versions. This is Trinquet's.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return versionCmd.printDiabloVersion(help)
+			return versionCmd.printVersion(help)
 		},
 	}
 	return cmd
 }
 
-func (cmd versionCmd) printDiabloVersion(help string) error {
+func (cmd versionCmd) printVersion(help string) error {
 	fmt.Fprintf(cmd.out, "%s. v%s\n", help, version.Version)
 	return nil
 }
