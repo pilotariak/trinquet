@@ -62,10 +62,11 @@ func NewGRPCClient(cmd *cobra.Command) (*GRPCClient, error) {
 	}
 	conf := &config.Configuration{
 		Auth: &config.AuthConfiguration{
-			Name: "vault",
-			Vault: &config.VaultConfiguration{
-				Address: "https://vault.io",
-			},
+			// Name: "vault",
+			// Vault: &config.VaultConfiguration{
+			// 	Address: "https://vault.io",
+			// },
+			Name: "BasicAuth",
 		},
 	}
 	authentication, err := auth.New(conf)
