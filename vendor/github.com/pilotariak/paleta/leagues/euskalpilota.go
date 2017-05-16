@@ -36,7 +36,7 @@ var (
 	redOut    = color.New(color.FgRed).SprintFunc()
 )
 
-func fetch(uri string, disciplineID string, levelID string, data url.Values) ([]byte, error) {
+func fetch(uri string, data url.Values) ([]byte, error) {
 	u, _ := url.ParseRequestURI(uri)
 	urlStr := fmt.Sprintf("%v", u)
 
@@ -59,10 +59,12 @@ func fetch(uri string, disciplineID string, levelID string, data url.Values) ([]
 	return body, nil
 }
 
-func Display(uri string, disciplineID string, levelID string, date string) error {
+// Display will fetch results and print them
+func Display(uri string, challengeID string, disciplineID string, levelID string) error {
 	data := url.Values{}
+	logrus.Debugf("[leagues] Search: challenge:%s discipline:%s level:%s", challengeID, disciplineID, levelID)
 	data.Add("InSel", "")
-	data.Add("InCompet", date)
+	data.Add("InCompet", challengeID)
 	data.Add("InSpec", disciplineID)
 	data.Add("InVille", "0")
 	data.Add("InClub", "0")
@@ -74,7 +76,7 @@ func Display(uri string, disciplineID string, levelID string, date string) error
 	data.Add("InGroupe", "0")
 	data.Add("InVoir", "Voir les résultats")
 
-	body, err := fetch(uri, disciplineID, levelID, data)
+	body, err := fetch(uri, data)
 	if err != nil {
 		return err
 	}

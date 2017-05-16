@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ type VersionResponse struct {
 }
 
 func VersionHandler(w http.ResponseWriter, r *http.Request) {
-	glog.V(1).Infof("[Version] handler")
+	glog.V(2).Infof("Retrieve version")
 	response := VersionResponse{
 		Version: version.Version,
 	}

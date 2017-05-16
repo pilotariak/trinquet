@@ -16,10 +16,8 @@ package ffpb
 
 import (
 	// "fmt"
-	// "os"
 
 	"github.com/Sirupsen/logrus"
-	// "github.com/olekukonko/tablewriter"
 
 	"github.com/pilotariak/paleta/leagues"
 )
@@ -29,7 +27,11 @@ const (
 )
 
 var (
-	current = "20170101"
+	challenges = map[string]string{
+		"20170101": "Championnat de France 2016/2017",
+		"20160101": "Championnat de France 2015/2016",
+		"20150101": "Championnat de France 2014/2015",
+	}
 
 	disciplines = map[string]string{
 		"1":  "Trinquet / Main Nue - Groupe A",
@@ -90,18 +92,6 @@ func newFFPBLeague() (leagues.League, error) {
 	}, nil
 }
 
-// func (l *ffpbLeague) Describe() {
-// 	table := tablewriter.NewWriter(os.Stdout)
-// 	table.SetRowLine(true)
-// 	table.SetAutoWrapText(false)
-// 	table.Append([]string{"Name", l.Name})
-// 	table.Append([]string{"Address", l.Address})
-// 	table.Append([]string{"Website", l.Website})
-// 	table.Append([]string{"Email", l.Email})
-// 	table.Append([]string{"Phone number", l.PhoneNumber})
-// 	table.Render()
-// }
-
 func (l *ffpbLeague) Details() map[string]string {
 	return map[string]string{
 		"Name":        l.Name,
@@ -112,6 +102,11 @@ func (l *ffpbLeague) Details() map[string]string {
 		"Fax":         l.Fax,
 	}
 }
+
+func (l *ffpbLeague) Challenges() map[string]string {
+	return challenges
+}
+
 func (l *ffpbLeague) Levels() map[string]string {
 	return levels
 }
@@ -120,7 +115,7 @@ func (l *ffpbLeague) Disciplines() map[string]string {
 	return disciplines
 }
 
-func (l *ffpbLeague) Display(disciplineID string, levelID string) error {
-	logrus.Debugf("[ffpb] Search results for %s %s", disciplineID, levelID)
-	return leagues.Display(uri, disciplineID, levelID, current)
+func (l *ffpbLeague) Display(challengeID string, disciplineID string, levelID string) error {
+	logrus.Debugf("[ffpb] Search results for %s %s %s", challengeID, disciplineID, levelID)
+	return leagues.Display(uri, challengeID, disciplineID, levelID)
 }

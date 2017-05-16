@@ -29,7 +29,12 @@ const (
 )
 
 var (
-	current = "20170501"
+	challenges = map[string]string{
+		"20170501": "Championnat 2016-2017 CCAPB",
+		"20160501": "Championnat Hiver 2015-2016 LCAPB",
+		"20150501": "Championnat Hiver 2014-2015 LCAPB",
+		"20130501": "Championnat Hiver 2013-2014 LCAPB",
+	}
 
 	disciplines = map[string]string{
 		"2":   "Trinquet / P.G. Pleine Masculin",
@@ -73,7 +78,7 @@ type lcapbLeague struct {
 
 func newLCAPBLeague() (leagues.League, error) {
 	return &lcapbLeague{
-		Name:        "LIGUE DE PELOTE BASQUE DE CÔTE D’ARGENT",
+		Name:        "Ligue de Pelote Basque de Côte d’Argent",
 		Website:     "http://www.lcapb.net/",
 		Address:     "Maison Départementale des Sports\n153, rue David Johnston\n33000 Bordeaux",
 		Email:       "contact@lcapb.net",
@@ -81,18 +86,6 @@ func newLCAPBLeague() (leagues.League, error) {
 		Fax:         "05 56 00 99 15",
 	}, nil
 }
-
-// func (l *lcapbLeague) Describe() {
-// 	table := tablewriter.NewWriter(os.Stdout)
-// 	table.SetRowLine(true)
-// 	table.SetAutoWrapText(false)
-// 	table.Append([]string{"Name", l.Name})
-// 	table.Append([]string{"Address", l.Address})
-// 	table.Append([]string{"Website", l.Website})
-// 	table.Append([]string{"Email", l.Email})
-// 	table.Append([]string{"Phone number", l.PhoneNumber})
-// 	table.Render()
-// }
 
 func (l *lcapbLeague) Details() map[string]string {
 	return map[string]string{
@@ -105,6 +98,10 @@ func (l *lcapbLeague) Details() map[string]string {
 	}
 }
 
+func (l *lcapbLeague) Challenges() map[string]string {
+	return challenges
+}
+
 func (l *lcapbLeague) Levels() map[string]string {
 	return levels
 }
@@ -113,8 +110,8 @@ func (l *lcapbLeague) Disciplines() map[string]string {
 	return disciplines
 }
 
-func (l *lcapbLeague) Display(disciplineID string, levelID string) error {
+func (l *lcapbLeague) Display(challengeID string, disciplineID string, levelID string) error {
 
-	logrus.Debugf("[lcapb] Search results for %s %s", disciplineID, levelID)
-	return leagues.Display(uri, disciplineID, levelID, current)
+	logrus.Debugf("[lcapb] Search results for %s %s %s", challengeID, disciplineID, levelID)
+	return leagues.Display(uri, challengeID, disciplineID, levelID)
 }

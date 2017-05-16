@@ -16,10 +16,8 @@ package ctpb
 
 import (
 	// "fmt"
-	// "os"
 
 	"github.com/Sirupsen/logrus"
-	// "github.com/olekukonko/tablewriter"
 
 	"github.com/pilotariak/paleta/leagues"
 )
@@ -29,7 +27,13 @@ const (
 )
 
 var (
-	current = "20170501"
+	challenges = map[string]string{
+		"20170501": "Championnat d'Hiver 2016-2017",
+		"20160104": "Championnat d'Hiver 2015-2016",
+		"20150104": "Championnat d'Hiver 2014-2015",
+		"20140104": "Championnat d'Hiver 2013-2014",
+		"20130104": "Championnat d'Hiver 2012-2013",
+	}
 
 	disciplines = map[string]string{
 		"1":   "Trinquet / Main Nue - Groupe A",
@@ -96,19 +100,6 @@ func newCTPBLeague() (leagues.League, error) {
 	}, nil
 }
 
-// func (l *ctpbLeague) Describe() {
-// 	table := tablewriter.NewWriter(os.Stdout)
-// 	// table.SetHeader([]string{"Date", "Club 1", "Club 2", "Score", "Commentaire"})
-// 	table.SetRowLine(true)
-// 	table.SetAutoWrapText(false)
-// 	table.Append([]string{"Name", l.Name})
-// 	table.Append([]string{"Address", l.Address})
-// 	table.Append([]string{"Website", l.Website})
-// 	table.Append([]string{"Email", l.Email})
-// 	table.Append([]string{"Phone number", l.PhoneNumber})
-// 	table.Render()
-// }
-
 func (l *ctpbLeague) Details() map[string]string {
 	return map[string]string{
 		"Name":        l.Name,
@@ -120,6 +111,10 @@ func (l *ctpbLeague) Details() map[string]string {
 	}
 }
 
+func (l *ctpbLeague) Challenges() map[string]string {
+	return challenges
+}
+
 func (l *ctpbLeague) Levels() map[string]string {
 	return levels
 }
@@ -128,7 +123,7 @@ func (l *ctpbLeague) Disciplines() map[string]string {
 	return disciplines
 }
 
-func (l *ctpbLeague) Display(disciplineID string, levelID string) error {
-	logrus.Debugf("[ctpb] Search results for %s %s", disciplineID, levelID)
-	return leagues.Display(uri, disciplineID, levelID, current)
+func (l *ctpbLeague) Display(challengeID string, disciplineID string, levelID string) error {
+	logrus.Debugf("[ctpb] Search results for %s %s %s", challengeID, disciplineID, levelID)
+	return leagues.Display(uri, challengeID, disciplineID, levelID)
 }

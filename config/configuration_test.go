@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,23 @@ restPort = 9090
 
 [boltdb]
 file = "/tmp/ut.db"
-bucket = "trinquet"`)
+bucket = "trinquet"
+
+[tracing]
+name = "zipkin"
+
+[tracing.zipkin]
+host = "10.2.4.6"
+port = 9441
+
+[tracing.appdash]
+host = "10.1.3.5"
+port = 8080
+
+[tracing.jaeger]
+host = "10.2.2.2"
+port = 8888
+`)
 	err = ioutil.WriteFile(templateFile.Name(), data, 0700)
 	if err != nil {
 		t.Fatal(err)
@@ -55,13 +71,29 @@ bucket = "trinquet"`)
 	// Storage
 	if configuration.BoltDB.Bucket != "trinquet" ||
 		configuration.BoltDB.File != "/tmp/ut.db" {
-		t.Fatalf("Configuration BoldDB failed")
+		t.Fatalf("Configuration BoltDB failed")
 	}
 
 	// API
-	if configuration.API.GrpcPort != 80 ||
+	if configuration.API.GrpcPort != 8080 ||
 		configuration.API.RestPort != 9090 {
 		t.Fatalf("Configuration API failed")
 	}
 
+	// Tracing
+	if configuration.Tracing.Name != "zipkin" {
+		t.Fatalf("Configuration OpenTracing tracer failed")
+	}
+	if configuration.Tracing.Zipkin.Host != "10.2.4.6" ||
+		configuration.Tracing.Zipkin.Port != 9441 {
+		t.Fatalf("Configuration OpenTracing Zipkin failed")
+	}
+	if configuration.Tracing.Appdash.Host != "10.1.3.5" ||
+		configuration.Tracing.Appdash.Port != 8080 {
+		t.Fatalf("Configuration OpenTracing Appdash failed")
+	}
+	if configuration.Tracing.Jaeger.Host != "10.2.2.2" ||
+		configuration.Tracing.Jaeger.Port != 8888 {
+		t.Fatalf("Configuration OpenTracing Jaeger failed")
+	}
 }

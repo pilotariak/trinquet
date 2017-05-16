@@ -22,32 +22,22 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// type Discipline struct {
-// 	ID   string
-// 	Name string
-// }
-
-// type Level struct {
-// 	ID   string
-// 	Name string
-// }
-
 type League interface {
-
-	// Describe display informations
-	//Describe()
 
 	// Details send informations about the league
 	Details() map[string]string
 
 	// Display will print results on stdout
-	Display(disciplineID string, levelID string) error
+	Display(challengeID string, disciplineID string, levelID string) error
+
+	// Challenges retrieve available challenges
+	Challenges() map[string]string
 
 	// Levels retrieve available levels
-	Levels() map[string]string // ([]Level, error)
+	Levels() map[string]string
 
 	// Disciplines retrieve available pelota disciplines
-	Disciplines() map[string]string // ([]Discipline, error)
+	Disciplines() map[string]string
 }
 
 type LeagueFunc func() (League, error)

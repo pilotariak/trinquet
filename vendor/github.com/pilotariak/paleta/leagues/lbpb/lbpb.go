@@ -16,10 +16,8 @@ package lbpb
 
 import (
 	// "fmt"
-	// "os"
 
 	"github.com/Sirupsen/logrus"
-	// "github.com/olekukonko/tablewriter"
 
 	"github.com/pilotariak/paleta/leagues"
 )
@@ -29,7 +27,11 @@ const (
 )
 
 var (
-	current = "20170301"
+	challenges = map[string]string{
+		"20170301": "CHAMPIONNAT HIVER 2016 - 2017",
+		"20160301": "Championnat HIVER 2015 - 2016",
+		"20140302": "Championnat HIVER 2014 - 2015",
+	}
 
 	disciplines = map[string]string{
 		"2":  "Trinquet / P.G. Pleine Masculin",
@@ -89,18 +91,6 @@ func newLBPBLeague() (leagues.League, error) {
 	}, nil
 }
 
-// func (l *lbpbLeague) Describe() {
-// 	table := tablewriter.NewWriter(os.Stdout)
-// 	table.SetRowLine(true)
-// 	table.SetAutoWrapText(false)
-// 	table.Append([]string{"Name", l.Name})
-// 	table.Append([]string{"Address", l.Address})
-// 	table.Append([]string{"Website", l.Website})
-// 	table.Append([]string{"Email", l.Email})
-// 	table.Append([]string{"Phone number", l.PhoneNumber})
-// 	table.Render()
-// }
-
 func (l *lbpbLeague) Details() map[string]string {
 	return map[string]string{
 		"Name":        l.Name,
@@ -112,6 +102,10 @@ func (l *lbpbLeague) Details() map[string]string {
 	}
 }
 
+func (l *lbpbLeague) Challenges() map[string]string {
+	return challenges
+}
+
 func (l *lbpbLeague) Levels() map[string]string {
 	return levels
 }
@@ -120,8 +114,8 @@ func (l *lbpbLeague) Disciplines() map[string]string {
 	return disciplines
 }
 
-func (l *lbpbLeague) Display(disciplineID string, levelID string) error {
+func (l *lbpbLeague) Display(challengeID string, disciplineID string, levelID string) error {
 
-	logrus.Debugf("[lbpb] Search results for %s %s", disciplineID, levelID)
-	return leagues.Display(uri, disciplineID, levelID, current)
+	logrus.Debugf("[lbpb] Search results for %s %s %s", challengeID, disciplineID, levelID)
+	return leagues.Display(uri, challengeID, disciplineID, levelID)
 }

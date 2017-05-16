@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 	"sort"
 
 	"github.com/pilotariak/trinquet/config"
-	"github.com/pilotariak/trinquet/pb"
+	"github.com/pilotariak/trinquet/pb/v1beta"
 )
 
 // Backend represents a storage backend
@@ -74,7 +74,7 @@ func GetBackends() []string {
 	return backends
 }
 
-func StoreLeague(backend Backend, league *pb.League) error {
+func StoreLeague(backend Backend, league *v1beta.League) error {
 	data, err := json.Marshal(league)
 	if err != nil {
 		return err
@@ -83,12 +83,12 @@ func StoreLeague(backend Backend, league *pb.League) error {
 
 }
 
-func RetrieveLeague(backend Backend, name string) (*pb.League, error) {
+func RetrieveLeague(backend Backend, name string) (*v1beta.League, error) {
 	data, err := backend.Get([]byte(name))
 	if err != nil {
 		return nil, err
 	}
-	var league *pb.League
+	var league *v1beta.League
 	err = json.Unmarshal(data, &league)
 	if err != nil {
 		return nil, err
@@ -96,12 +96,12 @@ func RetrieveLeague(backend Backend, name string) (*pb.League, error) {
 	return league, nil
 }
 
-func ListAll(backend Backend) ([]*pb.League, error) {
+func ListAll(backend Backend) ([]*v1beta.League, error) {
 	names, err := backend.List()
 	if err != nil {
 		return nil, err
 	}
-	var allleagues []*pb.League
+	var allleagues []*v1beta.League
 	for _, name := range names {
 		league, err := RetrieveLeague(backend, name)
 		if err != nil {

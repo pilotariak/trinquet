@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ type Configuration struct {
 	Backend string
 	API     *APIConfiguration
 	BoltDB  *BoltDBConfiguration
+	Tracing *TracingConfiguration
+	Auth    *AuthConfiguration
 }
 
 // New returns a Configuration with default values
@@ -33,6 +35,8 @@ func New() *Configuration {
 		Backend: "boltdb",
 		BoltDB:  &BoltDBConfiguration{},
 		API:     &APIConfiguration{},
+		Tracing: &TracingConfiguration{},
+		Auth:    &AuthConfiguration{},
 	}
 }
 
@@ -55,4 +59,40 @@ type APIConfiguration struct {
 type BoltDBConfiguration struct {
 	Bucket string
 	File   string
+}
+
+type ZipkinConfiguration struct {
+	Host string
+	Port int
+}
+
+type AppdashConfiguration struct {
+	Host string
+	Port int
+}
+
+type JaegerConfiguration struct {
+	Host string
+	Port int
+}
+
+// TracingConfiguration defines the OpenTracing usage
+type TracingConfiguration struct {
+	Name    string
+	Zipkin  *ZipkinConfiguration
+	Appdash *AppdashConfiguration
+	Jaeger  *JaegerConfiguration
+}
+
+type AuthConfiguration struct {
+	Name  string
+	Vault *VaultConfiguration
+}
+
+type VaultConfiguration struct {
+	Address    string
+	Roleid     string
+	Secretid   string
+	HealthUser string `toml:"healthuser"`
+	HealthKey  string `toml:"healthkey"`
 }

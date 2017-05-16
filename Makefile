@@ -1,4 +1,4 @@
-# Copyright (C) 2016 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+# Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ MAKE_COLOR=\033[33;01m%-20s\033[0m
 MAIN = github.com/pilotariak/trinquet
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 PKGS = $(shell glide novendor)
-EXE = $(shell ls trinquet-*_*)
+EXE = $(shell ls trinquetd-*_* trinquetctl-*_* trinquetadm-*_*)
 
 PACKAGE=$(APP)-$(VERSION)
 ARCHIVE=$(PACKAGE).tar
@@ -63,8 +63,8 @@ clean: ## Cleanup
 	@echo -e "$(OK_COLOR)[$(APP)] Cleanup$(NO_COLOR)"
 	@rm -fr trinquetctl trinquetd *.tar.gz
 
-.PHONY: init
-init: ## Install requirements
+.PHONY: tools
+tools: ## Install tools
 	@echo -e "$(OK_COLOR)[$(APP)] Install requirements$(NO_COLOR)"
 	@go get -u github.com/golang/glog
 	@go get -u github.com/kardianos/govendor
@@ -72,19 +72,22 @@ init: ## Install requirements
 	@go get -u github.com/golang/lint/golint
 	@go get -u github.com/kisielk/errcheck
 	@go get -u github.com/mitchellh/gox
-	@wget https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip
+	@go get -u gopkg.in/mikedanese/gazel.v17/gazel
+	@wget https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip
+
+.PHONY: proto
+proto: ## Install protocol buffer tools
+	@go get -u github.com/golang/protobuf/protoc-gen-go
+	@go get -u github.com/golang/protobuf/proto
+	@go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/
+	@go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+
+init: tools proto ## Install requirements
 
 .PHONY: deps
 deps: ## Install dependencies
 	@echo -e "$(OK_COLOR)[$(APP)] Update dependencies$(NO_COLOR)"
 	@govendor update
-
-.PHONY: proto
-proto: ## Install protocol buffer tools
-	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	@govendor fetch github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-	@govendor fetch github.com/golang/protobuf/protoc-gen-go
-	@govendor fetch google.golang.org/grpc
 
 .PHONY: pb
 pb: ## Generate Protobuf
@@ -94,13 +97,25 @@ pb: ## Generate Protobuf
 swagger: ## Generate Swagger
 	go-bindata-assetfs -pkg swagger third_party/swagger-ui/... && mv bindata_assetfs.go pkg/ui/swagger/
 
+.PHONY: changelog
+changelog:
+	@$(GO) generate -x ./pkg/static/
+
+.PHONY: doc
+doc: ## Generate documentation
+	@echo -e "$(OK_COLOR)[$(APP)] Documentation $(NO_COLOR)"
+	docker run -it -v `pwd`/doc:/documents/ rochdev/alpine-asciidoctor asciidoctor index.adoc -a stylesheet=dt-oab.css -a stylesdir=/documents/stylesheets -d book -a toc2
+
+.PHONY: webdoc
+webdoc: doc
+	@$(GO) generate -x ./pkg/webdoc/
+
 .PHONY: build
 build: ## Make binary
 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/server
-	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/ctl
-#	@$(GO) build -o trinquetctl ./ctl/
-#	@$(GO) build -o trinquetd ./server
+	@$(GO) build -o trinquetd github.com/pilotariak/trinquet/cmd/trinquetd
+	@$(GO) build -o trinquetctl github.com/pilotariak/trinquet/cmd/trinquetctl
+	@$(GO) build -o trinquetadm github.com/pilotariak/trinquet/cmd/trinquetadm
 
 .PHONY: test
 test: ## Launch unit tests
@@ -126,7 +141,9 @@ coverage: ## Launch code coverage
 
 gox: ## Make all binaries
 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
-	$(GOX) $(GOX_ARGS) github.com/pilotariak/trinquet/
+	$(GOX) -output=trinquetctl-$(VERSION)_{{.OS}}_{{.Arch}} -osarch="linux/amd64 darwin/amd64 windows/amd64" github.com/pilotariak/trinquet/cmd/trinquetctl
+	$(GOX) -output=trinquetadm-$(VERSION)_{{.OS}}_{{.Arch}} -osarch="linux/amd64 darwin/amd64 windows/amd64" github.com/pilotariak/trinquet/cmd/trinquetadm
+	$(GOX) -output=trinquetd-$(VERSION)_{{.OS}}_{{.Arch}} -osarch="linux/amd64 darwin/amd64 windows/amd64" github.com/pilotariak/trinquet/cmd/trinquetd
 
 .PHONY: binaries
 binaries: ## Upload all binaries

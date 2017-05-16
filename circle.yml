@@ -9,16 +9,17 @@ machine:
 
 dependencies:
   post:
-    - make init
+    - go version
 
 test:
   pre:
-    - go version
     - echo `pwd`
+    - echo $GOPATH
     - mkdir -p /home/ubuntu/.go_workspace/src/github.com/pilotariak/
     - cd /home/ubuntu/.go_workspace/src/github.com/pilotariak/ && ln -s /home/ubuntu/trinquet .
-    - cd
+    - cd /home/ubuntu/.go_workspace/src/github.com/pilotariak/trinquet
   override:
+    - make tools
     - make build
     # - make test
     - make lint

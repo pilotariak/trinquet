@@ -16,10 +16,8 @@ package ctpb
 
 import (
 	// "fmt"
-	// "os"
 
 	"github.com/Sirupsen/logrus"
-	// "github.com/olekukonko/tablewriter"
 
 	"github.com/pilotariak/paleta/leagues"
 )
@@ -29,7 +27,11 @@ const (
 )
 
 var (
-	current = "20160401"
+	challenges = map[string]string{
+		"20160401": "Championnat Hiver 2016",
+		"20160402": "Championnat  2015-2016",
+		"20140402": "Championnat Hiver 2014",
+	}
 
 	disciplines = map[string]string{
 		"2": "Trinquet / P.G. Pleine Masculin",
@@ -58,20 +60,15 @@ func newLIDFPBLeague() (leagues.League, error) {
 	}, nil
 }
 
-// func (l *lidfpbLeague) Describe() {
-// 	table := tablewriter.NewWriter(os.Stdout)
-// 	table.SetRowLine(true)
-// 	table.SetAutoWrapText(false)
-// 	table.Append([]string{"Name", l.Name})
-// 	table.Append([]string{"Website", l.Website})
-// 	table.Render()
-// }
-
 func (l *lidfpbLeague) Details() map[string]string {
 	return map[string]string{
 		"Name":    l.Name,
 		"Website": l.Website,
 	}
+}
+
+func (l *lidfpbLeague) Challenges() map[string]string {
+	return challenges
 }
 
 func (l *lidfpbLeague) Levels() map[string]string {
@@ -82,7 +79,7 @@ func (l *lidfpbLeague) Disciplines() map[string]string {
 	return disciplines
 }
 
-func (l *lidfpbLeague) Display(disciplineID string, levelID string) error {
-	logrus.Debugf("[lidfpb] Search results for %s %s", disciplineID, levelID)
-	return leagues.Display(uri, disciplineID, levelID, current)
+func (l *lidfpbLeague) Display(challengeID string, disciplineID string, levelID string) error {
+	logrus.Debugf("[lidfpb] Search results for %s %s %s", challengeID, disciplineID, levelID)
+	return leagues.Display(uri, challengeID, disciplineID, levelID)
 }
