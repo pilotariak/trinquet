@@ -15,7 +15,7 @@ It exports metrics for [Prometheus](https://prometheus.io/)
 
 Distributed tracing is available using [OpenTracing](http://opentracing.io/). Supported tracers are:
 * [x] [Zipkin](https://github.com/openzipkin)
-* [x] [Appdash](https://github.com/sourcegraph/appdash)
+* [x] [Jaeger](https://github.com/uber/jaeger)
 
 
 ## Installation
@@ -32,27 +32,17 @@ Launch Zipkin with Docker, and open a browser on 9411:
 
     $ docker run -d -p 9411:9411 openzipkin/zipkin
 
-or Appdash with Docker (open a browser on 7700):
+or Jaeger with Docker (open a browser on 16686):
 
-    $ docker run -d -p 7700:7700 -p 7701:7701 solher/appdash
+    $ docker run -d -p5775:5775/udp -p16686:16686 jaegertracing/all-in-one:latest
 
-Launch the *trinquetd* server:
+Use the *trinquetd* CLI to launch a server:
 
-    $ ./trinquetd -config trinquet.toml -v 2 -logtostderr
+    $ trinquetd run -config trinquet.toml -v 2 -logtostderr
 
-Use the *trinquetctl* CLI to manage pelota informations :
+Use the *trinquetctl* CLI to manage pelota informations.
 
-    $ Trinquetctl is a CLI to use the Trinquet server
-
-    Usage:
-    trinquetctl [command]
-
-    Available Commands:
-        league      Print information about a league
-        leagues     Print the available leagues
-        version     Print the version number of Trinquetctl
-
-    Use "trinquetctl [command] --help" for more information about a command.
+Use the *trinquetadm* CLI to manage the server.
 
 You could explore the API using [Swagger](http://swagger.io/) UI :
 
