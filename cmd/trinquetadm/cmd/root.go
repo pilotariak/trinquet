@@ -59,6 +59,7 @@ func NewDiabloadmCommand(out io.Writer) *cobra.Command {
 		Long:  `Diabloadm is a command-line tool to manage a Trinquet server.`,
 	}
 	rootCmd.AddCommand(
+		newHealthCmd(out),
 		newVersionCmd(out),
 		utils.NewCompletionCommand(out, completionExample),
 	)
