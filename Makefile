@@ -47,7 +47,7 @@ MAKE_COLOR=\033[33;01m%-20s\033[0m
 MAIN = github.com/pilotariak/trinquet
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 PKGS = $(shell glide novendor)
-EXE = $(shell ls trinquet-*_*)
+EXE = $(shell ls trinquetd-*_* trinquetctl-*_* trinquetadm-*_*)
 
 PACKAGE=$(APP)-$(VERSION)
 ARCHIVE=$(PACKAGE).tar
