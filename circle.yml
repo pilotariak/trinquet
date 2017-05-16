@@ -19,6 +19,7 @@ test:
     - cd /home/ubuntu/.go_workspace/src/github.com/pilotariak/ && ln -s /home/ubuntu/trinquet .
     - cd
   override:
+    - make proto
     - make build
     # - make test
     - make lint
