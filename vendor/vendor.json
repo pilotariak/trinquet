@@ -17,6 +17,12 @@
 			"revisionTime": "2017-05-08T18:36:27Z"
 		},
 		{
+			"checksumSHA1": "DYv6Q1+VfnUVxMwvk5IshAClLvw=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "5e5dc898656f695e2a086b8e12559febbfc01562",
+			"revisionTime": "2017-05-15T10:45:16Z"
+		},
+		{
 			"checksumSHA1": "sUt0hjBkOj4gjmFeKJ0+o4Hx/Ks=",
 			"path": "github.com/apache/thrift/lib/go/thrift",
 			"revision": "bc1344d55fa450289f98b1a1d0d15c7fcb7d37e1",
@@ -619,6 +625,54 @@
 			"revisionTime": "2016-01-12T16:53:51Z"
 		},
 		{
+			"checksumSHA1": "Te6OfMSCU+jWMdVKDNqCzHAng40=",
+			"path": "github.com/pilotariak/paleta/leagues",
+			"revision": "6f06120480b91f997a0dc42cb8efa273cc0bf084",
+			"revisionTime": "2016-12-14T11:02:28Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		},
+		{
+			"checksumSHA1": "JctnzLIrQDBVo7+61+7J8kjrGSY=",
+			"path": "github.com/pilotariak/paleta/leagues/ctpb",
+			"revision": "6f06120480b91f997a0dc42cb8efa273cc0bf084",
+			"revisionTime": "2016-12-14T11:02:28Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		},
+		{
+			"checksumSHA1": "Em1YIeQ/4q03bMQSj0T96ZF+FMI=",
+			"path": "github.com/pilotariak/paleta/leagues/ffpb",
+			"revision": "6f06120480b91f997a0dc42cb8efa273cc0bf084",
+			"revisionTime": "2016-12-14T11:02:28Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		},
+		{
+			"checksumSHA1": "CT4P9diqINFw1WN3xtnQy9E1ghA=",
+			"path": "github.com/pilotariak/paleta/leagues/lbpb",
+			"revision": "6f06120480b91f997a0dc42cb8efa273cc0bf084",
+			"revisionTime": "2016-12-14T11:02:28Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		},
+		{
+			"checksumSHA1": "6rpHVT1cu5RpZ88HcezyjlktoTc=",
+			"path": "github.com/pilotariak/paleta/leagues/lcapb",
+			"revision": "6f06120480b91f997a0dc42cb8efa273cc0bf084",
+			"revisionTime": "2016-12-14T11:02:28Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		},
+		{
+			"checksumSHA1": "hfCJn7wxv36/s1XZ61IaFkt03iE=",
+			"path": "github.com/pilotariak/paleta/leagues/lidfpb",
+			"revision": "6f06120480b91f997a0dc42cb8efa273cc0bf084",
+			"revisionTime": "2016-12-14T11:02:28Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		},
+		{
 			"checksumSHA1": "VQ8m0ncYJSbzslI7nVjiAdGEOeQ=",
 			"path": "github.com/pkg/browser",
 			"revision": "c90ca0c84f15f81c982e32665bffd8d7aac8f097",
@@ -807,6 +861,18 @@
 			"path": "golang.org/x/net/context",
 			"revision": "c9b681d35165f1995d6f3034e61f8761d4b90c99",
 			"revisionTime": "2017-05-10T00:04:54Z"
+		},
+		{
+			"checksumSHA1": "vqc3a+oTUGX8PmD0TS+qQ7gmN8I=",
+			"path": "golang.org/x/net/html",
+			"revision": "34057069f4ab13dc4433c68d368737ebeafcccdc",
+			"revisionTime": "2017-05-09T19:22:37Z"
+		},
+		{
+			"checksumSHA1": "00eQaGynDYrv3tL+C7l9xH0IDZg=",
+			"path": "golang.org/x/net/html/atom",
+			"revision": "34057069f4ab13dc4433c68d368737ebeafcccdc",
+			"revisionTime": "2017-05-09T19:22:37Z"
 		},
 		{
 			"checksumSHA1": "Oa5JBb27An4MwKwLQ2WMzqRexa8=",

@@ -17,7 +17,7 @@ test:
     - echo $GOPATH
     - mkdir -p /home/ubuntu/.go_workspace/src/github.com/pilotariak/
     - cd /home/ubuntu/.go_workspace/src/github.com/pilotariak/ && ln -s /home/ubuntu/trinquet .
-    - cd $GOPATH/src/github.com/pilotariak
+    - cd /home/ubuntu/.go_workspace/src/github.com/pilotariak/trinquet
   override:
     - make tools
     - make build
