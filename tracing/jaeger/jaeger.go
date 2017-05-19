@@ -21,7 +21,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	jaeger "github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
-	jaegerlog "github.com/uber/jaeger-client-go/log"
+	// jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-lib/metrics"
 
 	"github.com/pilotariak/trinquet/config"
