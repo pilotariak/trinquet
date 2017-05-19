@@ -49,7 +49,8 @@ func newTracer(conf *config.Configuration) (opentracing.Tracer, error) {
 			LocalAgentHostPort: fmt.Sprintf("%s:%d", conf.Tracing.Jaeger.Host, conf.Tracing.Jaeger.Port),
 		},
 	}
-	jLogger := jaegerlog.StdLogger
+	// jLogger := jaegerlog.StdLogger
+	jLogger := gLogger
 	jMetricsFactory := metrics.NullFactory
 	// Initialize tracer with a logger and a metrics factory
 	tracer, _, err := cfg.New(
