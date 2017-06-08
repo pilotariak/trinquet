@@ -23,5 +23,3 @@ RUN set -x \
     && go build -o /usr/bin/trinquetadm github.com/pilotariak/trinquet/cmd/trinquetadm \
     && go build -o /usr/bin/trinquetctl github.com/pilotariak/trinquet/cmd/trinquetctl \
     && echo "Build complete."
-
-ENTRYPOINT ["/usr/bin/trinquet"]
