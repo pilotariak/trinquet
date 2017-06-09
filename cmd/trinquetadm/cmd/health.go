@@ -36,7 +36,7 @@ func newHealthCmd(out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "health",
-		Short: "Checl health about the Trinquet server",
+		Short: "Check health about the Trinquet server",
 		Long:  `All software has healths. This is Trinquet's.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := utils.NewGRPCClient(cmd)

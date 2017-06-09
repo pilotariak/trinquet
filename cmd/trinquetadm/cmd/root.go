@@ -51,15 +51,16 @@ func init() {
 	grpclog.SetLogger(log.New(ioutil.Discard, "", log.LstdFlags))
 }
 
-// NewTrinquetadmCommand creates the `diabloadm` command and its nested children.
+// NewTrinquetadmCommand creates the `trinquetadm` command and its nested children.
 func NewTrinquetadmCommand(out io.Writer) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "trinquetadm",
+		Use:   cliName,
 		Short: "command-line tool to manage a Trinquet server",
 		Long:  `Trinquetadm is a command-line tool to manage a Trinquet server.`,
 	}
 	rootCmd.AddCommand(
 		newHealthCmd(out),
+		newInfoCmd(out),
 		utils.NewVersionCmd(out, helpMessage),
 		utils.NewCompletionCommand(out, completionExample),
 	)

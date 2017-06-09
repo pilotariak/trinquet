@@ -65,10 +65,10 @@ func RunCompletion(out io.Writer, cmd *cobra.Command, args []string) error {
 	return run(out, cmd.Parent())
 }
 
-func runCompletionBash(out io.Writer, diabloctl *cobra.Command) error {
-	return diabloctl.GenBashCompletion(out)
+func runCompletionBash(out io.Writer, cmd *cobra.Command) error {
+	return cmd.GenBashCompletion(out)
 }
 
-func runCompletionZsh(out io.Writer, diabloctl *cobra.Command) error {
+func runCompletionZsh(out io.Writer, cmd *cobra.Command) error {
 	return fmt.Errorf("Zsh is currently Unsupported")
 }

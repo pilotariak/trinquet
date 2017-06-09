@@ -51,12 +51,12 @@ func init() {
 	grpclog.SetLogger(log.New(ioutil.Discard, "", log.LstdFlags))
 }
 
-// NewDiabloctlCommand creates the `diabloctl` command and its nested children.
-func NewDiabloctlCommand(out io.Writer) *cobra.Command {
+// NewTrinquetctlCommand creates the `trinquetctl` command and its nested children.
+func NewTrinquetctlCommand(out io.Writer) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "diabloctl",
+		Use:   cliName,
 		Short: "command-line tool to interact with a Trinquet server",
-		Long:  `Diabloctl is a command-line tool to interact with a Trinquet server.`,
+		Long:  `Trinquetctl is a command-line tool to interact with a Trinquet server.`,
 	}
 	rootCmd.AddCommand(
 		newLeagueCmd(out),
@@ -77,7 +77,7 @@ func NewDiabloctlCommand(out io.Writer) *cobra.Command {
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	cmd := NewDiabloctlCommand(os.Stdout)
+	cmd := NewTrinquetctlCommand(os.Stdout)
 	if err := cmd.Execute(); err != nil {
 		fmt.Println(utils.RedOut(err))
 		os.Exit(1)
