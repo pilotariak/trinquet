@@ -54,21 +54,20 @@ func registerServer(backend storage.Backend, serverAuth *serverAuthentication, t
 				grpc_auth.UnaryServerInterceptor(serverAuth.authenticate))),
 	)
 
-	services := []string{
-		"LeagueService",
-	}
+	v1beta.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
+
 	info.RegisterInfoServiceServer(server, api.NewInfoService(conf))
-	healthService, err := api.NewHealthService(conf, grpcAddr, services)
+	healthService, err := api.NewHealthService(conf, grpcAddr, api.Services)
 	if err != nil {
 		return nil, err
 	}
 	health.RegisterHealthServiceServer(server, healthService)
 
-	v1beta.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
-
 	healthServer := ghealth.NewServer()
 	healthpb.RegisterHealthServer(server, healthServer)
-	healthServer.SetServingStatus("LeagueService", healthpb.HealthCheckResponse_SERVING)
+	for _, service := range api.Services {
+		healthServer.SetServingStatus(service, healthpb.HealthCheckResponse_SERVING)
+	}
 
 	grpc_prometheus.Register(server)
 

@@ -25,15 +25,25 @@ import (
 	"github.com/pilotariak/trinquet/tracing"
 )
 
+const (
+	LeagueServiceName = "LeagueService"
+)
+
 type LeagueService struct {
 	Backend storage.Backend
 }
 
 func NewLeagueService(backend storage.Backend) *LeagueService {
 	glog.V(2).Infof("Create the League service using %v", backend)
-	return &LeagueService{
+	service := &LeagueService{
 		Backend: backend,
 	}
+	service.Register()
+	return service
+}
+
+func (service *LeagueService) Register() {
+	Services = append(Services, LeagueServiceName)
 }
 
 func (ls *LeagueService) List(ctx context.Context, request *v1beta.GetLeaguesRequest) (*v1beta.GetLeaguesResponse, error) {

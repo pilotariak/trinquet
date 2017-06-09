@@ -39,44 +39,7 @@ import (
 	"github.com/pilotariak/trinquet/tracing"
 	_ "github.com/pilotariak/trinquet/tracing/jaeger"
 	_ "github.com/pilotariak/trinquet/tracing/zipkin"
-	// "github.com/pilotariak/trinquet/version"
 )
-
-// const (
-// 	port = 8080
-// )
-
-// var (
-// 	debug           bool
-// 	vrs             bool
-// 	defaultConfFile string
-// 	// grpcPort int
-// 	// gwPort   int
-// )
-
-// allowCORS allows Cross Origin Resource Sharing from any origin.
-// Don't do this without consideration in production systems.
-// func allowCORS(h http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		if origin := r.Header.Get("Origin"); origin != "" {
-// 			w.Header().Set("Access-Control-Allow-Origin", origin)
-// 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
-// 				preflightHandler(w, r)
-// 				return
-// 			}
-// 		}
-// 		h.ServeHTTP(w, r)
-// 	})
-// }
-
-// func preflightHandler(w http.ResponseWriter, r *http.Request) {
-// 	headers := []string{"Content-Type", "Accept"}
-// 	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
-// 	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
-// 	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
-// 	glog.V(2).Info("preflight request for %s", r.URL.Path)
-// 	return
-// }
 
 func getStorage(conf *config.Configuration) (storage.Backend, error) {
 	glog.V(0).Infof("Create the backend using: %s", conf.Backend)
@@ -134,28 +97,6 @@ func initializePelotaDatabase(db storage.Backend) {
 	}
 }
 
-// func init() {
-// 	// parse flags
-// 	flag.BoolVar(&vrs, "version", false, "print version and exit")
-// 	flag.BoolVar(&debug, "d", false, "run in debug mode")
-// 	flag.StringVar(&defaultConfFile, "config", "trinquet.toml", "Configuration file to used")
-// 	// flag.IntVar(&grpcPort, "grpcPort", 8080, "gRPC port to use")
-// 	// flag.IntVar(&gwPort, "gwPort", 9090, "REST gateway port to use")
-
-// 	flag.Usage = func() {
-// 		fmt.Fprint(os.Stderr, fmt.Sprintf("Trinquet v%s\n", version.Version))
-// 		flag.PrintDefaults()
-// 	}
-
-// 	flag.Parse()
-
-// 	if vrs {
-// 		fmt.Printf("%s\n", version.Version)
-// 		os.Exit(0)
-// 	}
-// }
-
-// func main() {
 func StartServer(configFilename string) {
 
 	conf, err := config.LoadFileConfig(configFilename)
