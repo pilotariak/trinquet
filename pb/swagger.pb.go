@@ -1,7 +1,7 @@
 package pb 
 
 const (
-api = `{"swagger":"2.0","basePath":"","info":{"title":"Trinquet REST API","version":"1.0.0","description":"\nFor more information about the usage of the Trinquet REST API, see\n[https://github.com/pilotariak/trinquet](https://github.com/pilotariak/trinquet).\n"},"schemes":null,"consumes":["application/json"],"produces":["application/json"],"paths":{"/v1beta/leagues":{"get":{"operationId":"List","responses":{"200":{"description":"","schema":{"$ref":"#/definitions/v1betaGetLeaguesResponse"}}},"summary":"List returns all available League","tags":["LeagueService"]},"post":{"operationId":"Create","parameters":[{"in":"body","name":"body","required":true,"schema":{"$ref":"#/definitions/v1betaCreateLeagueRequest"}}],"responses":{"200":{"description":"","schema":{"$ref":"#/definitions/v1betaCreateLeagueResponse"}}},"summary":"Create creates a new league","tags":["LeagueService"]}},"/v1beta/tournaments":{"get":{"operationId":"List","responses":{"200":{"description":"","schema":{"$ref":"#/definitions/v1betaGetTournamentsResponse"}}},"summary":"List returns all available Tournament","tags":["TournamentService"]},"post":{"operationId":"Create","parameters":[{"in":"body","name":"body","required":true,"schema":{"$ref":"#/definitions/v1betaCreateTournamentRequest"}}],"responses":{"200":{"description":"","schema":{"$ref":"#/definitions/v1betaCreateTournamentResponse"}}},"summary":"Create creates a new tournament","tags":["TournamentService"]}},"/v1beta/tournaments/{name}":{"get":{"operationId":"Get","parameters":[{"format":"string","in":"path","name":"name","required":true,"type":"string"}],"responses":{"200":{"description":"","schema":{"$ref":"#/definitions/v1betaGetTournamentResponse"}}},"summary":"Get return a tournament","tags":["TournamentService"]}},"/v1ibeta/leagues/{name}":{"get":{"operationId":"Get","parameters":[{"format":"string","in":"path","name":"name","required":true,"type":"string"}],"responses":{"200":{"description":"","schema":{"$ref":"#/definitions/v1betaGetLeagueResponse"}}},"summary":"Get return a league","tags":["LeagueService"]}}},"definitions":{"v1betaCreateLeagueRequest":{"properties":{"name":{"format":"string","type":"string"},"website":{"format":"string","type":"string"}},"type":"object"},"v1betaCreateLeagueResponse":{"properties":{"code":{"format":"int32","type":"integer"},"league":{"$ref":"#/definitions/v1betaLeague"}},"type":"object"},"v1betaCreateTournamentRequest":{"properties":{"groups":{"items":{"$ref":"#/definitions/v1betaGroup"},"type":"array"},"name":{"format":"string","type":"string"}},"type":"object"},"v1betaCreateTournamentResponse":{"properties":{"tournament":{"$ref":"#/definitions/v1betaTournament"}},"type":"object"},"v1betaDiscipline":{"properties":{"description":{"format":"string","type":"string"},"id":{"format":"string","type":"string"}},"type":"object"},"v1betaGetLeagueRequest":{"properties":{"name":{"format":"string","type":"string"}},"type":"object"},"v1betaGetLeagueResponse":{"properties":{"league":{"$ref":"#/definitions/v1betaLeague"}},"type":"object"},"v1betaGetLeaguesRequest":{"properties":{"name":{"format":"string","type":"string"}},"type":"object"},"v1betaGetLeaguesResponse":{"properties":{"leagues":{"items":{"$ref":"#/definitions/v1betaLeague"},"type":"array"}},"type":"object"},"v1betaGetTournamentRequest":{"properties":{"name":{"format":"string","type":"string"}},"type":"object"},"v1betaGetTournamentResponse":{"properties":{"tournament":{"$ref":"#/definitions/v1betaTournament"}},"type":"object"},"v1betaGetTournamentsRequest":{"type":"object"},"v1betaGetTournamentsResponse":{"properties":{"tournaments":{"items":{"$ref":"#/definitions/v1betaTournament"},"type":"array"}},"type":"object"},"v1betaGroup":{"properties":{"name":{"format":"string","type":"string"},"team":{"items":{"$ref":"#/definitions/v1betaTeam"},"type":"array"}},"type":"object"},"v1betaLeague":{"description":"League define a pelota league","properties":{"details":{"additionalProperties":{"format":"string","type":"string"},"type":"object"},"disciplines":{"items":{"$ref":"#/definitions/v1betaDiscipline"},"type":"array"},"levels":{"items":{"$ref":"#/definitions/v1betaLevel"},"type":"array"},"name":{"format":"string","type":"string"}},"type":"object"},"v1betaLevel":{"properties":{"description":{"format":"string","type":"string"},"id":{"format":"string","type":"string"}},"type":"object"},"v1betaRound":{"properties":{"first":{"$ref":"#/definitions/v1betaTeam"},"name":{"format":"string","type":"string"},"score":{"format":"string","type":"string"},"second":{"$ref":"#/definitions/v1betaTeam"}},"type":"object"},"v1betaTeam":{"properties":{"name":{"format":"string","type":"string"}},"type":"object"},"v1betaTournament":{"description":"Tournament define a pelota league","properties":{"groups":{"additionalProperties":{"$ref":"#/definitions/v1betaGroup"},"type":"object"},"name":{"format":"string","type":"string"},"rounds":{"items":{"$ref":"#/definitions/v1betaRound"},"type":"array"}},"type":"object"}}}
+api = `{"swagger":"2.0","basePath":"","info":{"title":"Trinquet REST API","version":"1.0.0","description":"\nFor more information about the usage of the Trinquet REST API, see\n[https://github.com/pilotariak/trinquet](https://github.com/pilotariak/trinquet).\n"},"schemes":null,"consumes":["application/json"],"produces":["application/json"],"paths":{"/v1beta/leagues":{"get":{"operationId":"List","parameters":[{"in":"query","name":"name","required":false,"type":"string"}],"responses":{"200":{"description":"A successful response.","schema":{"$ref":"#/definitions/v1betaGetLeaguesResponse"}}},"summary":"List returns all available League","tags":["LeagueService"]},"post":{"operationId":"Create","parameters":[{"in":"body","name":"body","required":true,"schema":{"$ref":"#/definitions/v1betaCreateLeagueRequest"}}],"responses":{"200":{"description":"A successful response.","schema":{"$ref":"#/definitions/v1betaCreateLeagueResponse"}}},"summary":"Create creates a new league","tags":["LeagueService"]}},"/v1beta/tournaments":{"get":{"operationId":"List","responses":{"200":{"description":"A successful response.","schema":{"$ref":"#/definitions/v1betaGetTournamentsResponse"}}},"summary":"List returns all available Tournament","tags":["TournamentService"]},"post":{"operationId":"Create","parameters":[{"in":"body","name":"body","required":true,"schema":{"$ref":"#/definitions/v1betaCreateTournamentRequest"}}],"responses":{"200":{"description":"A successful response.","schema":{"$ref":"#/definitions/v1betaCreateTournamentResponse"}}},"summary":"Create creates a new tournament","tags":["TournamentService"]}},"/v1beta/tournaments/{name}":{"get":{"operationId":"Get","parameters":[{"in":"path","name":"name","required":true,"type":"string"}],"responses":{"200":{"description":"A successful response.","schema":{"$ref":"#/definitions/v1betaGetTournamentResponse"}}},"summary":"Get return a tournament","tags":["TournamentService"]}},"/v1ibeta/leagues/{name}":{"get":{"operationId":"Get","parameters":[{"in":"path","name":"name","required":true,"type":"string"}],"responses":{"200":{"description":"A successful response.","schema":{"$ref":"#/definitions/v1betaGetLeagueResponse"}}},"summary":"Get return a league","tags":["LeagueService"]}}},"definitions":{"v1betaCreateLeagueRequest":{"properties":{"name":{"type":"string"},"website":{"type":"string"}},"type":"object"},"v1betaCreateLeagueResponse":{"properties":{"code":{"format":"int32","type":"integer"},"league":{"$ref":"#/definitions/v1betaLeague"}},"type":"object"},"v1betaCreateTournamentRequest":{"properties":{"groups":{"items":{"$ref":"#/definitions/v1betaGroup"},"type":"array"},"name":{"type":"string"}},"type":"object"},"v1betaCreateTournamentResponse":{"properties":{"tournament":{"$ref":"#/definitions/v1betaTournament"}},"type":"object"},"v1betaDiscipline":{"properties":{"description":{"type":"string"},"id":{"type":"string"}},"type":"object"},"v1betaGetLeagueResponse":{"properties":{"league":{"$ref":"#/definitions/v1betaLeague"}},"type":"object"},"v1betaGetLeaguesResponse":{"properties":{"leagues":{"items":{"$ref":"#/definitions/v1betaLeague"},"type":"array"}},"type":"object"},"v1betaGetTournamentResponse":{"properties":{"tournament":{"$ref":"#/definitions/v1betaTournament"}},"type":"object"},"v1betaGetTournamentsResponse":{"properties":{"tournaments":{"items":{"$ref":"#/definitions/v1betaTournament"},"type":"array"}},"type":"object"},"v1betaGroup":{"properties":{"name":{"type":"string"},"team":{"items":{"$ref":"#/definitions/v1betaTeam"},"type":"array"}},"type":"object"},"v1betaLeague":{"description":"League define a pelota league","properties":{"details":{"additionalProperties":{"type":"string"},"type":"object"},"disciplines":{"items":{"$ref":"#/definitions/v1betaDiscipline"},"type":"array"},"levels":{"items":{"$ref":"#/definitions/v1betaLevel"},"type":"array"},"name":{"type":"string"}},"type":"object"},"v1betaLevel":{"properties":{"description":{"type":"string"},"id":{"type":"string"}},"type":"object"},"v1betaRound":{"properties":{"first":{"$ref":"#/definitions/v1betaTeam"},"name":{"type":"string"},"score":{"type":"string"},"second":{"$ref":"#/definitions/v1betaTeam"}},"type":"object"},"v1betaTeam":{"properties":{"name":{"type":"string"}},"type":"object"},"v1betaTournament":{"description":"Tournament define a pelota league","properties":{"groups":{"additionalProperties":{"$ref":"#/definitions/v1betaGroup"},"type":"object"},"name":{"type":"string"},"rounds":{"items":{"$ref":"#/definitions/v1betaRound"},"type":"array"}},"type":"object"}}}
 `
 league = `{
   "swagger": "2.0",
@@ -26,12 +26,20 @@ league = `{
         "operationId": "List",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetLeaguesResponse"
             }
           }
         },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "LeagueService"
         ]
@@ -41,7 +49,7 @@ league = `{
         "operationId": "Create",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaCreateLeagueResponse"
             }
@@ -68,7 +76,7 @@ league = `{
         "operationId": "List",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetTournamentsResponse"
             }
@@ -83,7 +91,7 @@ league = `{
         "operationId": "Create",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaCreateTournamentResponse"
             }
@@ -110,7 +118,7 @@ league = `{
         "operationId": "Get",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetTournamentResponse"
             }
@@ -121,8 +129,7 @@ league = `{
             "name": "name",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "string"
+            "type": "string"
           }
         ],
         "tags": [
@@ -136,7 +143,7 @@ league = `{
         "operationId": "Get",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetLeagueResponse"
             }
@@ -147,8 +154,7 @@ league = `{
             "name": "name",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "string"
+            "type": "string"
           }
         ],
         "tags": [
@@ -162,12 +168,10 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "website": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -187,8 +191,7 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "groups": {
           "type": "array",
@@ -210,21 +213,10 @@ league = `{
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "title": {
-          "type": "string",
-          "format": "string"
-        }
-      }
-    },
-    "v1betaGetLeagueRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -233,15 +225,6 @@ league = `{
       "properties": {
         "league": {
           "$ref": "#/definitions/v1betaLeague"
-        }
-      }
-    },
-    "v1betaGetLeaguesRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "format": "string"
         }
       }
     },
@@ -256,15 +239,6 @@ league = `{
         }
       }
     },
-    "v1betaGetTournamentRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "format": "string"
-        }
-      }
-    },
     "v1betaGetTournamentResponse": {
       "type": "object",
       "properties": {
@@ -272,9 +246,6 @@ league = `{
           "$ref": "#/definitions/v1betaTournament"
         }
       }
-    },
-    "v1betaGetTournamentsRequest": {
-      "type": "object"
     },
     "v1betaGetTournamentsResponse": {
       "type": "object",
@@ -291,8 +262,7 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "team": {
           "type": "array",
@@ -306,14 +276,12 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "details": {
           "type": "object",
           "additionalProperties": {
-            "type": "string",
-            "format": "string"
+            "type": "string"
           }
         },
         "levels": {
@@ -335,12 +303,10 @@ league = `{
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "title": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -348,8 +314,7 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "first": {
           "$ref": "#/definitions/v1betaTeam"
@@ -358,8 +323,7 @@ league = `{
           "$ref": "#/definitions/v1betaTeam"
         },
         "score": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -367,8 +331,7 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -376,8 +339,7 @@ league = `{
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "groups": {
           "type": "object",

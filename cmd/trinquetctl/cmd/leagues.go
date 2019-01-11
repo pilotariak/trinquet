@@ -1,4 +1,4 @@
-// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016-2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/pilotariak/trinquet/cmd/utils"
 	"github.com/pilotariak/trinquet/pb/v1beta"
+	"github.com/pilotariak/trinquet/pkg/cmd/utils"
 )
 
 var (
@@ -84,7 +84,7 @@ func newLeagueCmd(out io.Writer) *cobra.Command {
 }
 
 func (cmd leagueCmd) listLeagues(gRPCClient *utils.GRPCClient) error {
-	glog.V(1).Info("List all leagues")
+	log.Info().Msg("List all leagues")
 
 	conn, err := gRPCClient.GetConn()
 	if err != nil {
@@ -108,7 +108,7 @@ func (cmd leagueCmd) listLeagues(gRPCClient *utils.GRPCClient) error {
 }
 
 func (cmd leagueCmd) getLeague(gRPCClient *utils.GRPCClient, name string) error {
-	glog.V(1).Info("Get league %s", name)
+	log.Info().Str("league", name).Msg("Retrieve league informations")
 
 	conn, err := gRPCClient.GetConn()
 	if err != nil {

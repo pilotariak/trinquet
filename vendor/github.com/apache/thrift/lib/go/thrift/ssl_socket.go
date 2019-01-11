@@ -20,6 +20,7 @@
 package thrift
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
 	"time"
@@ -90,7 +91,8 @@ func (p *TSSLSocket) Open() error {
 	// If we have a hostname, we need to pass the hostname to tls.Dial for
 	// certificate hostname checks.
 	if p.hostPort != "" {
-		if p.conn, err = tls.Dial("tcp", p.hostPort, p.cfg); err != nil {
+		if p.conn, err = tls.DialWithDialer(&net.Dialer{
+			Timeout: p.timeout}, "tcp", p.hostPort, p.cfg); err != nil {
 			return NewTTransportException(NOT_OPEN, err.Error())
 		}
 	} else {
@@ -106,7 +108,8 @@ func (p *TSSLSocket) Open() error {
 		if len(p.addr.String()) == 0 {
 			return NewTTransportException(NOT_OPEN, "Cannot open bad address.")
 		}
-		if p.conn, err = tls.Dial(p.addr.Network(), p.addr.String(), p.cfg); err != nil {
+		if p.conn, err = tls.DialWithDialer(&net.Dialer{
+			Timeout: p.timeout}, p.addr.Network(), p.addr.String(), p.cfg); err != nil {
 			return NewTTransportException(NOT_OPEN, err.Error())
 		}
 	}
@@ -156,7 +159,7 @@ func (p *TSSLSocket) Write(buf []byte) (int, error) {
 	return p.conn.Write(buf)
 }
 
-func (p *TSSLSocket) Flush() error {
+func (p *TSSLSocket) Flush(ctx context.Context) error {
 	return nil
 }
 
@@ -169,6 +172,5 @@ func (p *TSSLSocket) Interrupt() error {
 
 func (p *TSSLSocket) RemainingBytes() (num_bytes uint64) {
 	const maxSize = ^uint64(0)
-	return maxSize  // the thruth is, we just don't know unless framed is used
+	return maxSize // the thruth is, we just don't know unless framed is used
 }
-

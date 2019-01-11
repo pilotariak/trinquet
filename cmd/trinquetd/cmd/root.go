@@ -1,4 +1,4 @@
-// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016-2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,41 +15,30 @@
 package cmd
 
 import (
-	goflag "flag"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc/grpclog"
-	// init glog to get its flags
-	_ "github.com/golang/glog"
 
-	"github.com/pilotariak/trinquet/cmd/utils"
+	"github.com/pilotariak/trinquet/pkg/cmd/utils"
 )
 
 var (
 	cliName           = "trinquetd"
 	helpMessage       = "Trinqued - The Trinquet server"
 	completionExample = `
-               # Load the trinquetd completion code for bash into the current shell
-	       source <(trinquetd completion bash)
+			# Load the trinquetd completion code for bash into the current shell
+	       	source <(trinquetd completion bash)
 
-               # Write bash completion code to a file and source if from .bash_profile
-	       trinquetd completion bash > ~/.trinquet/completion.bash.inc
-	       printf "\n# Trinquetd shell completion\nsource '$HOME/.trinquet/completion.bash.inc'\n" >> $HOME/.bash_profile
-               source $HOME/.bash_profile
+			# Write bash completion code to a file and source if from .bash_profile
+	       	trinquetd completion bash > ~/.trinquet/completion.bash.inc
+	       	printf "\n# Trinquetd shell completion\nsource '$HOME/.trinquet/completion.bash.inc'\n" >> $HOME/.bash_profile
+			source $HOME/.bash_profile
 
-	       # Load the trinquetd completion code for zsh[1] into the current shell
-	       source <(trinquetd completion zsh)`
+	       	# Load the trinquetd completion code for zsh[1] into the current shell
+	       	source <(trinquetd completion zsh)`
 )
-
-func init() {
-	// Tell gRPC not to log to console.
-	grpclog.SetLogger(log.New(ioutil.Discard, "", log.LstdFlags))
-}
 
 // NewTrinquetdCommand creates the `trinquetd` command and its nested children.
 func NewTrinquetdCommand(out io.Writer) *cobra.Command {
@@ -64,11 +53,6 @@ func NewTrinquetdCommand(out io.Writer) *cobra.Command {
 		utils.NewCompletionCommand(out, completionExample),
 	)
 	cobra.EnablePrefixMatching = true
-
-	// add glog flags
-	rootCmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
-	// https://github.com/kubernetes/dns/pull/27/files
-	goflag.CommandLine.Parse([]string{})
 
 	return rootCmd
 }

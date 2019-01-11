@@ -1,6 +1,7 @@
 package zipkintracer
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net"
@@ -9,8 +10,8 @@ import (
 
 	"github.com/apache/thrift/lib/go/thrift"
 
-	"github.com/openzipkin/zipkin-go-opentracing/_thrift/gen-go/scribe"
-	"github.com/openzipkin/zipkin-go-opentracing/_thrift/gen-go/zipkincore"
+	"github.com/openzipkin-contrib/zipkin-go-opentracing/thrift/gen-go/scribe"
+	"github.com/openzipkin-contrib/zipkin-go-opentracing/thrift/gen-go/zipkincore"
 )
 
 const defaultScribeCategory = "zipkin"
@@ -112,8 +113,13 @@ func NewScribeCollector(addr string, timeout time.Duration, options ...ScribeOpt
 
 // Collect implements Collector.
 func (c *ScribeCollector) Collect(s *zipkincore.Span) error {
-	c.spanc <- s
-	return nil // accepted
+	select {
+	case c.spanc <- s:
+		// Accepted.
+	case <-c.quit:
+		// Collector concurrently closed.
+	}
+	return nil
 }
 
 // Close implements Collector.
@@ -198,7 +204,7 @@ func (c *ScribeCollector) send() error {
 			return err
 		}
 	}
-	if rc, err := c.client.Log(sendBatch); err != nil {
+	if rc, err := c.client.Log(context.Background(), sendBatch); err != nil {
 		c.client = nil
 		_ = c.logger.Log("err", fmt.Sprintf("during Log: %v", err))
 		return err

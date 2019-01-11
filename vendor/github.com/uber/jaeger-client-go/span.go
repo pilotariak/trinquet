@@ -1,42 +1,33 @@
-// Copyright (c) 2016 Uber Technologies, Inc.
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Copyright (c) 2017-2018 Uber Technologies, Inc.
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package jaeger
 
 import (
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
-
-	"github.com/uber/jaeger-client-go/utils"
 )
 
 // Span implements opentracing.Span
 type Span struct {
 	sync.RWMutex
 
-	tracer *tracer
+	tracer *Tracer
 
 	context SpanContext
 
@@ -49,9 +40,6 @@ type Span struct {
 	// and the ingress spans when the process joins another trace.
 	firstInProcess bool
 
-	// used to distinguish local vs. RPC Server vs. RPC Client spans
-	spanKind string
-
 	// startTime is the timestamp indicating when the span began, with microseconds precision.
 	startTime time.Time
 
@@ -59,25 +47,20 @@ type Span struct {
 	// Zero value means duration is unknown.
 	duration time.Duration
 
-	// peer points to the peer service participating in this span,
-	// e.g. the Client if this span is a server span,
-	// or Server if this span is a client span
-	peer struct {
-		Ipv4        int32
-		Port        int16
-		ServiceName string
-	}
-
 	// tags attached to this span
 	tags []Tag
 
 	// The span's "micro-log"
 	logs []opentracing.LogRecord
 
-	observer SpanObserver
+	// references for this span
+	references []Reference
+
+	observer ContribSpanObserver
 }
 
-// Tag a simple key value wrapper
+// Tag is a simple key value wrapper.
+// TODO deprecate in the next major release, use opentracing.Tag instead.
 type Tag struct {
 	key   string
 	value interface{}
@@ -97,7 +80,7 @@ func (s *Span) SetOperationName(operationName string) opentracing.Span {
 // SetTag implements SetTag() of opentracing.Span
 func (s *Span) SetTag(key string, value interface{}) opentracing.Span {
 	s.observer.OnSetTag(key, value)
-	if key == string(ext.SamplingPriority) && setSamplingPriority(s, key, value) {
+	if key == string(ext.SamplingPriority) && !setSamplingPriority(s, value) {
 		return s
 	}
 	s.Lock()
@@ -109,21 +92,7 @@ func (s *Span) SetTag(key string, value interface{}) opentracing.Span {
 }
 
 func (s *Span) setTagNoLocking(key string, value interface{}) {
-	handled := false
-	if handler, ok := specialTagHandlers[key]; ok {
-		handled = handler(s, key, value)
-	}
-	if !handled {
-		s.tags = append(s.tags, Tag{key: key, value: value})
-	}
-}
-
-func (s *Span) setTracerTags(tags []Tag) {
-	s.Lock()
-	for _, tag := range tags {
-		s.tags = append(s.tags, tag)
-	}
-	s.Unlock()
+	s.tags = append(s.tags, Tag{key: key, value: value})
 }
 
 // LogFields implements opentracing.Span API
@@ -133,6 +102,11 @@ func (s *Span) LogFields(fields ...log.Field) {
 	if !s.context.IsSampled() {
 		return
 	}
+	s.logFieldsNoLocking(fields...)
+}
+
+// this function should only be called while holding a Write lock
+func (s *Span) logFieldsNoLocking(fields ...log.Field) {
 	lr := opentracing.LogRecord{
 		Fields:    fields,
 		Timestamp: time.Now(),
@@ -186,16 +160,14 @@ func (s *Span) appendLog(lr opentracing.LogRecord) {
 
 // SetBaggageItem implements SetBaggageItem() of opentracing.SpanContext
 func (s *Span) SetBaggageItem(key, value string) opentracing.Span {
-	key = normalizeBaggageKey(key)
 	s.Lock()
 	defer s.Unlock()
-	s.context = s.context.WithBaggageItem(key, value)
+	s.tracer.setBaggage(s, key, value)
 	return s
 }
 
 // BaggageItem implements BaggageItem() of opentracing.SpanContext
 func (s *Span) BaggageItem(key string) string {
-	key = normalizeBaggageKey(key)
 	s.RLock()
 	defer s.RUnlock()
 	return s.context.baggage[key]
@@ -230,6 +202,8 @@ func (s *Span) FinishWithOptions(options opentracing.FinishOptions) {
 
 // Context implements opentracing.Span API
 func (s *Span) Context() opentracing.SpanContext {
+	s.Lock()
+	defer s.Unlock()
 	return s.context
 }
 
@@ -251,102 +225,25 @@ func (s *Span) OperationName() string {
 	return s.operationName
 }
 
-func (s *Span) peerDefined() bool {
-	return s.peer.ServiceName != "" || s.peer.Ipv4 != 0 || s.peer.Port != 0
+func (s *Span) serviceName() string {
+	return s.tracer.serviceName
 }
 
-func (s *Span) isRPC() bool {
-	s.RLock()
-	defer s.RUnlock()
-	return s.spanKind == string(ext.SpanKindRPCClientEnum) || s.spanKind == string(ext.SpanKindRPCServerEnum)
-}
-
-func (s *Span) isRPCClient() bool {
-	s.RLock()
-	defer s.RUnlock()
-	return s.spanKind == string(ext.SpanKindRPCClientEnum)
-}
-
-var specialTagHandlers = map[string]func(*Span, string, interface{}) bool{
-	string(ext.SpanKind):     setSpanKind,
-	string(ext.PeerHostIPv4): setPeerIPv4,
-	string(ext.PeerPort):     setPeerPort,
-	string(ext.PeerService):  setPeerService,
-}
-
-func setSpanKind(s *Span, key string, value interface{}) bool {
-	if val, ok := value.(string); ok {
-		s.spanKind = val
-		return true
-	}
-	if val, ok := value.(ext.SpanKindEnum); ok {
-		s.spanKind = string(val)
-		return true
-	}
-	return false
-}
-
-func setPeerIPv4(s *Span, key string, value interface{}) bool {
-	if val, ok := value.(string); ok {
-		if ip, err := utils.ParseIPToUint32(val); err == nil {
-			s.peer.Ipv4 = int32(ip)
-			return true
-		}
-	}
-	if val, ok := value.(uint32); ok {
-		s.peer.Ipv4 = int32(val)
-		return true
-	}
-	if val, ok := value.(int32); ok {
-		s.peer.Ipv4 = val
-		return true
-	}
-	return false
-}
-
-func setPeerPort(s *Span, key string, value interface{}) bool {
-	if val, ok := value.(string); ok {
-		if port, err := utils.ParsePort(val); err == nil {
-			s.peer.Port = int16(port)
-			return true
-		}
-	}
-	if val, ok := value.(uint16); ok {
-		s.peer.Port = int16(val)
-		return true
-	}
-	if val, ok := value.(int); ok {
-		s.peer.Port = int16(val)
-		return true
-	}
-	return false
-}
-
-func setPeerService(s *Span, key string, value interface{}) bool {
-	if val, ok := value.(string); ok {
-		s.peer.ServiceName = val
-		return true
-	}
-	return false
-}
-
-func setSamplingPriority(s *Span, key string, value interface{}) bool {
+// setSamplingPriority returns true if the flag was updated successfully, false otherwise.
+func setSamplingPriority(s *Span, value interface{}) bool {
 	s.Lock()
 	defer s.Unlock()
-	if val, ok := value.(uint16); ok {
-		if val > 0 {
-			s.context.flags = s.context.flags | flagDebug | flagSampled
-		} else {
-			s.context.flags = s.context.flags & (^flagSampled)
-		}
+	val, ok := value.(uint16)
+	if !ok {
+		return false
+	}
+	if val == 0 {
+		s.context.flags = s.context.flags & (^flagSampled)
+		return true
+	}
+	if s.tracer.isDebugAllowed(s.operationName) {
+		s.context.flags = s.context.flags | flagDebug | flagSampled
 		return true
 	}
 	return false
-}
-
-// Converts end-user baggage key into internal representation.
-// Used for both read and write access to baggage items.
-func normalizeBaggageKey(key string) string {
-	// TODO(yurishkuro) normalizeBaggageKey: cache the results in some bounded LRU cache
-	return strings.Replace(strings.ToLower(key), "_", "-", -1)
 }

@@ -16,42 +16,39 @@
 
 function generate_grpcgw {
     pushd $1
+    echo "> Generate gRPC for $1"
+    ls *.pb.go
     rm -rf *.pb.go
-    protoc -I/usr/local/include \
-           -I. -I${GOPATH}/src \
-           -I../../vendor/github.com/googleapis/googleapis \
-           --go_out=plugins=grpc:. *.proto
+    protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
+       --go_out=plugins=grpc:. *.proto
 
+    echo "> Generate gRPC Gateway for $1"
+    ls *.pb.gw.go
     rm -rf *.pb.gw.go
-    protoc -I /usr/local/include -I . \
-           -I ${GOPATH}/src \
-           -I../../vendor/github.com/googleapis/googleapis \
-           --grpc-gateway_out=logtostderr=true:. *.proto
+    protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
+       --grpc-gateway_out=logtostderr=true:. *.proto
 
+    echo "> Generate Swagger for $1"
     rm -rf ../swagger/*.swagger.json
-    protoc -I /usr/local/include -I . \
-           -I ${GOPATH}/src \
-           -I../../vendor/github.com/googleapis/googleapis \
-           --swagger_out=logtostderr=true:. *.proto
+    protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
+       --swagger_out=logtostderr=true:. *.proto
     popd
 }
 
 function generate_grpc {
     pushd $1
+    echo "> Generate gRPC for $1"
     rm -rf *.pb.go
-    protoc -I/usr/local/include \
-           -I. -I${GOPATH}/src \
-           -I../../vendor/github.com/googleapis/googleapis \
-           --go_out=plugins=grpc:. *.proto
+    protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
+        --go_out=plugins=grpc:. *.proto
     popd
 }
 
-
 function generate_swagger {
+    echo "> Generate Swagger"
     find . -name "*.json" | xargs -I '{}' mv '{}' swagger/
     rm -f swagger/api.swagger.json
-    ls swagger
-    go run swagger/swagger.go swagger > swagger/api.swagger.json
+    go run ./swagger/swagger.go swagger > swagger/api.swagger.json
 }
 
 generate_grpcgw v1beta

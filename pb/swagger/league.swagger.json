@@ -21,12 +21,20 @@
         "operationId": "List",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetLeaguesResponse"
             }
           }
         },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "LeagueService"
         ]
@@ -36,7 +44,7 @@
         "operationId": "Create",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaCreateLeagueResponse"
             }
@@ -63,7 +71,7 @@
         "operationId": "List",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetTournamentsResponse"
             }
@@ -78,7 +86,7 @@
         "operationId": "Create",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaCreateTournamentResponse"
             }
@@ -105,7 +113,7 @@
         "operationId": "Get",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetTournamentResponse"
             }
@@ -116,8 +124,7 @@
             "name": "name",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "string"
+            "type": "string"
           }
         ],
         "tags": [
@@ -131,7 +138,7 @@
         "operationId": "Get",
         "responses": {
           "200": {
-            "description": "",
+            "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1betaGetLeagueResponse"
             }
@@ -142,8 +149,7 @@
             "name": "name",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "string"
+            "type": "string"
           }
         ],
         "tags": [
@@ -157,12 +163,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "website": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -182,8 +186,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "groups": {
           "type": "array",
@@ -205,21 +208,10 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "title": {
-          "type": "string",
-          "format": "string"
-        }
-      }
-    },
-    "v1betaGetLeagueRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -228,15 +220,6 @@
       "properties": {
         "league": {
           "$ref": "#/definitions/v1betaLeague"
-        }
-      }
-    },
-    "v1betaGetLeaguesRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "format": "string"
         }
       }
     },
@@ -251,15 +234,6 @@
         }
       }
     },
-    "v1betaGetTournamentRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "format": "string"
-        }
-      }
-    },
     "v1betaGetTournamentResponse": {
       "type": "object",
       "properties": {
@@ -267,9 +241,6 @@
           "$ref": "#/definitions/v1betaTournament"
         }
       }
-    },
-    "v1betaGetTournamentsRequest": {
-      "type": "object"
     },
     "v1betaGetTournamentsResponse": {
       "type": "object",
@@ -286,8 +257,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "team": {
           "type": "array",
@@ -301,14 +271,12 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "details": {
           "type": "object",
           "additionalProperties": {
-            "type": "string",
-            "format": "string"
+            "type": "string"
           }
         },
         "levels": {
@@ -330,12 +298,10 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "title": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -343,8 +309,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "first": {
           "$ref": "#/definitions/v1betaTeam"
@@ -353,8 +318,7 @@
           "$ref": "#/definitions/v1betaTeam"
         },
         "score": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -362,8 +326,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         }
       }
     },
@@ -371,8 +334,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "format": "string"
+          "type": "string"
         },
         "groups": {
           "type": "object",

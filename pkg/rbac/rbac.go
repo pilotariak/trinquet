@@ -1,4 +1,4 @@
-// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016-2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package rbac
 import (
 	"fmt"
 
-	"github.com/golang/glog"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -43,7 +43,7 @@ func AddRoles(api string, service string, roles map[string][]string) {
 }
 
 func HasRights(key string, roles []string) error {
-	glog.V(2).Infof("Check Roles: %s %s %s", key, roles, userRights[key])
+	log.Info().Msgf("Check Roles: %s %s %s", key, roles, userRights[key])
 	if key == GrpcHealthKey && len(roles) == 1 && HealthRole == roles[0] {
 		return nil
 	}

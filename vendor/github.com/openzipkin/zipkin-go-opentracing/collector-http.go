@@ -3,12 +3,11 @@ package zipkintracer
 import (
 	"bytes"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/apache/thrift/lib/go/thrift"
 
-	"github.com/openzipkin/zipkin-go-opentracing/_thrift/gen-go/zipkincore"
+	"github.com/openzipkin-contrib/zipkin-go-opentracing/thrift/gen-go/zipkincore"
 )
 
 // Default timeout for http request in seconds
@@ -29,13 +28,16 @@ type HTTPCollector struct {
 	batchInterval time.Duration
 	batchSize     int
 	maxBacklog    int
-	batch         []*zipkincore.Span
 	spanc         chan *zipkincore.Span
 	quit          chan struct{}
 	shutdown      chan error
-	sendMutex     *sync.Mutex
-	batchMutex    *sync.Mutex
+	reqCallback   RequestCallback
 }
+
+// RequestCallback receives the initialized request from the Collector before
+// sending it over the wire. This allows one to plug in additional headers or
+// do other customization.
+type RequestCallback func(*http.Request)
 
 // HTTPOption sets a parameter for the HttpCollector
 type HTTPOption func(c *HTTPCollector)
@@ -71,6 +73,17 @@ func HTTPBatchInterval(d time.Duration) HTTPOption {
 	return func(c *HTTPCollector) { c.batchInterval = d }
 }
 
+// HTTPClient sets a custom http client to use.
+func HTTPClient(client *http.Client) HTTPOption {
+	return func(c *HTTPCollector) { c.client = client }
+}
+
+// HTTPRequestCallback registers a callback function to adjust the collector
+// *http.Request before it sends the request to Zipkin.
+func HTTPRequestCallback(rc RequestCallback) HTTPOption {
+	return func(c *HTTPCollector) { c.reqCallback = rc }
+}
+
 // NewHTTPCollector returns a new HTTP-backend Collector. url should be a http
 // url for handle post request. timeout is passed to http client. queueSize control
 // the maximum size of buffer of async queue. The logger is used to log errors,
@@ -83,25 +96,32 @@ func NewHTTPCollector(url string, options ...HTTPOption) (Collector, error) {
 		batchInterval: defaultHTTPBatchInterval * time.Second,
 		batchSize:     defaultHTTPBatchSize,
 		maxBacklog:    defaultHTTPMaxBacklog,
-		batch:         []*zipkincore.Span{},
-		spanc:         make(chan *zipkincore.Span),
 		quit:          make(chan struct{}, 1),
 		shutdown:      make(chan error, 1),
-		sendMutex:     &sync.Mutex{},
-		batchMutex:    &sync.Mutex{},
 	}
 
 	for _, option := range options {
 		option(c)
 	}
 
+	// spanc can immediately accept maxBacklog spans and everything else is dropped.
+	c.spanc = make(chan *zipkincore.Span, c.maxBacklog)
+
 	go c.loop()
 	return c, nil
 }
 
 // Collect implements Collector.
+// attempts a non blocking send on the channel.
 func (c *HTTPCollector) Collect(s *zipkincore.Span) error {
-	c.spanc <- s
+	select {
+	case c.spanc <- s:
+		// Accepted.
+	case <-c.quit:
+		// Collector concurrently closed.
+	default:
+		c.logger.Log("msg", "queue full, disposing spans.", "size", len(c.spanc))
+	}
 	return nil
 }
 
@@ -136,55 +156,35 @@ func (c *HTTPCollector) loop() {
 	)
 	defer ticker.Stop()
 
+	// The following loop is single threaded
+	// allocate enough space so we don't have to reallocate.
+	batch := make([]*zipkincore.Span, 0, c.batchSize)
+
 	for {
 		select {
 		case span := <-c.spanc:
-			currentBatchSize := c.append(span)
-			if currentBatchSize >= c.batchSize {
+			batch = append(batch, span)
+			if len(batch) == c.batchSize {
+				c.send(batch)
+				batch = batch[0:0]
 				nextSend = time.Now().Add(c.batchInterval)
-				go c.send()
 			}
 		case <-tickc:
 			if time.Now().After(nextSend) {
+				if len(batch) > 0 {
+					c.send(batch)
+					batch = batch[0:0]
+				}
 				nextSend = time.Now().Add(c.batchInterval)
-				go c.send()
 			}
 		case <-c.quit:
-			c.shutdown <- c.send()
+			c.shutdown <- c.send(batch)
 			return
 		}
 	}
 }
 
-func (c *HTTPCollector) append(span *zipkincore.Span) (newBatchSize int) {
-	c.batchMutex.Lock()
-	defer c.batchMutex.Unlock()
-
-	c.batch = append(c.batch, span)
-	if len(c.batch) > c.maxBacklog {
-		dispose := len(c.batch) - c.maxBacklog
-		c.logger.Log("Backlog too long, disposing spans.", "count", dispose)
-		c.batch = c.batch[dispose:]
-	}
-	newBatchSize = len(c.batch)
-	return
-}
-
-func (c *HTTPCollector) send() error {
-	// in order to prevent sending the same batch twice
-	c.sendMutex.Lock()
-	defer c.sendMutex.Unlock()
-
-	// Select all current spans in the batch to be sent
-	c.batchMutex.Lock()
-	sendBatch := c.batch[:]
-	c.batchMutex.Unlock()
-
-	// Do not send an empty batch
-	if len(sendBatch) == 0 {
-		return nil
-	}
-
+func (c *HTTPCollector) send(sendBatch []*zipkincore.Span) error {
 	req, err := http.NewRequest(
 		"POST",
 		c.url,
@@ -194,15 +194,18 @@ func (c *HTTPCollector) send() error {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-thrift")
-	if _, err = c.client.Do(req); err != nil {
+	if c.reqCallback != nil {
+		c.reqCallback(req)
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
 		c.logger.Log("err", err.Error())
 		return err
 	}
-
-	// Remove sent spans from the batch
-	c.batchMutex.Lock()
-	c.batch = c.batch[len(sendBatch):]
-	c.batchMutex.Unlock()
-
+	resp.Body.Close()
+	// non 2xx code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		c.logger.Log("err", "HTTP POST span failed", "code", resp.Status)
+	}
 	return nil
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016-2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ import (
 	"errors"
 	"io"
 
-	"github.com/golang/glog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/pilotariak/trinquet/server/trinquetd"
+	"github.com/pilotariak/trinquet/pkg/server/trinquetd"
 )
 
 var (
@@ -54,6 +54,6 @@ func newRunCmd(out io.Writer) *cobra.Command {
 }
 
 func runServer(out io.Writer, config string) {
-	glog.V(2).Infof("Start the server")
+	log.Info().Msg("Start the server")
 	trinquetd.StartServer(config)
 }

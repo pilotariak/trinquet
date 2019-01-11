@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+# Copyright (C) 2016-2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.8-alpine
-MAINTAINER Nicolas Lamirault <nicolas.lamirault@gmail.com>
+FROM golang:1.11-alpine
+
+LABEL summary="Pilotariak Trinquet" \
+      description="" \
+      name="pilotariak/trinquet" \
+      url="https://github.com/pilotariak/trinquet" \
+      maintainer="Nicolas Lamirault <nicolas.lamirault@gmail.com>"
 
 COPY . /go/src/github.com/pilotariak/trinquet
 

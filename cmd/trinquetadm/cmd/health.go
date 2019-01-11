@@ -1,4 +1,4 @@
-// Copyright (C) 2016, 2017 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+// Copyright (C) 2016-2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ package cmd
 import (
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/olekukonko/tablewriter"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/pilotariak/trinquet/cmd/utils"
 	"github.com/pilotariak/trinquet/pb/health"
+	"github.com/pilotariak/trinquet/pkg/cmd/utils"
 )
 
 type healthCmd struct {
@@ -50,7 +50,7 @@ func newHealthCmd(out io.Writer) *cobra.Command {
 }
 
 func printHealth(gRPCClient *utils.GRPCClient, out io.Writer) error {
-	glog.V(1).Infof("Check health")
+	log.Info().Msg("Check health")
 
 	conn, err := gRPCClient.GetConn()
 	if err != nil {
