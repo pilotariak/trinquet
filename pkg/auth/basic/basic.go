@@ -17,65 +17,55 @@ package basic
 import (
 	"encoding/base64"
 	"fmt"
-	"strings"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 
 	"github.com/pilotariak/trinquet/pkg/auth"
 	"github.com/pilotariak/trinquet/pkg/config"
-	"github.com/pilotariak/trinquet/pkg/transport"
+	"github.com/pilotariak/trinquet/pkg/credentials"
+	// "github.com/pilotariak/trinquet/pkg/transport"
 )
 
 const (
-	label = "BasicAuth"
-
-	key = "basic"
+	// label = "BasicAuth"
+	key = "BasicAuth"
 )
 
-type basicAuthSystem struct{}
+type textSystem struct {
+}
 
 func init() {
-	auth.RegisterAuthentication(label, newBasicAuthSystem)
+	auth.RegisterAuthentication(key, newBasicAuthSystem)
 }
 
-func newBasicAuthSystem(config *config.Configuration) (auth.Authentication, error) {
-	return &basicAuthSystem{}, nil
+func newBasicAuthSystem(conf *config.Configuration) (auth.Authentication, error) {
+	log.Info().Str("auth", key).Msgf("Configuration: %s", conf.Auth.BasicAuth)
+	return &textSystem{}, nil
 }
 
-func (ba basicAuthSystem) Name() string {
-	return label
-}
-
-func (ba basicAuthSystem) Key() string {
+func (ba textSystem) Name() string {
 	return key
 }
 
-func (ba basicAuthSystem) Credentials(ctx context.Context, username string, password string) (string, error) {
-	log.Info().Str("auth", label).Msgf("Set credentials: %s", username)
+func (ba textSystem) Encode(ctx context.Context, username string, password string) (string, error) {
+	log.Info().Str("auth", key).Msgf("Set credentials: %s", username)
 	auth := username + ":" + password
 	token := base64.StdEncoding.EncodeToString([]byte(auth))
 	return token, nil
 }
 
-func (ba basicAuthSystem) Authenticate(ctx context.Context, token string) (map[string]string, error) {
-	log.Info().Str("auth", label).Msgf("Check BasicAuth token: %s", token)
+func (ba textSystem) Decode(ctx context.Context, credentials credentials.Credentials, token string) (map[string]string, error) {
+	log.Info().Str("auth", key).Msgf("Token to decode: %s", token)
 	b, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		return nil, fmt.Errorf("Can't check authentication: %s", err)
+		return nil, fmt.Errorf("Can't decode authentication token: %s", err)
 	}
-	pair := strings.SplitN(string(b), ":", 2)
-	if len(pair) != 2 {
-		return nil, fmt.Errorf("Not Authorized")
-	}
-	log.Info().Str("auth", label).Msgf("Auth: %s / %s", pair[0], pair[1])
-	if pair[0] != "health" {
-		if pair[0] != auth.Username || pair[1] != auth.Password {
-			return nil, fmt.Errorf("Unauthorized")
-		}
+
+	if err := credentials.Authenticate(ctx, string(b)); err != nil {
+		return nil, err
 	}
 
 	headers := map[string]string{}
-	headers[transport.Username] = pair[0]
 	return headers, nil
 }

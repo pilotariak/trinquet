@@ -31,8 +31,6 @@ import (
 	_ "github.com/pilotariak/paleta/pkg/leagues/lidfpb"
 	"github.com/pilotariak/trinquet/pb/v1beta"
 	"github.com/pilotariak/trinquet/pkg/api"
-	_ "github.com/pilotariak/trinquet/pkg/auth/basic"
-	_ "github.com/pilotariak/trinquet/pkg/auth/vault"
 	"github.com/pilotariak/trinquet/pkg/config"
 	"github.com/pilotariak/trinquet/pkg/storage"
 	_ "github.com/pilotariak/trinquet/pkg/storage/boltdb"
@@ -101,6 +99,11 @@ func StartServer(configFilename string) {
 		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
 
+	serverAuth, err := newServerAuthentication(conf)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to create authentication")
+	}
+
 	db, err := getStorage(conf)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to retrieve storage")
@@ -117,11 +120,6 @@ func StartServer(configFilename string) {
 		log.Fatal().Err(err).Msg("Failed to listen for gRPC")
 	}
 	log.Info().Str("address", grpcAddr).Msg("gRPC address is listened")
-
-	serverAuth, err := newServerAuthentication(conf)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to create authentication")
-	}
 
 	grpcServer, healthService, err := registerServer(db, serverAuth, conf, grpcAddr)
 	if err != nil {

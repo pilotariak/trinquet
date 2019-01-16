@@ -21,11 +21,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/pilotariak/trinquet/pkg/config"
-)
-
-const (
-	Username string = "admin"
-	Password string = "nimda"
+	"github.com/pilotariak/trinquet/pkg/credentials"
 )
 
 type AuthenticationFunc func(config *config.Configuration) (Authentication, error)
@@ -42,14 +38,11 @@ type Authentication interface {
 	// Name identify the system
 	Name() string
 
-	// Scheme used into the :authorization header
-	Key() string
+	// Encode build username and password into a token
+	Encode(ctx context.Context, username string, password string) (string, error)
 
-	// Credentials check username and password and returns a token
-	Credentials(ctx context.Context, username string, password string) (string, error)
-
-	// Authenticate check the authentication challenge
-	Authenticate(ctx context.Context, token string) (map[string]string, error)
+	// Decode decode the token
+	Decode(ctx context.Context, credentials credentials.Credentials, token string) (map[string]string, error)
 }
 
 // New returns a new authentication system using the name
@@ -58,6 +51,7 @@ func New(conf *config.Configuration) (Authentication, error) {
 	if conf.Auth == nil {
 		return nil, fmt.Errorf("Invalid authentication configuration: %s", conf)
 	}
+	log.Debug().Msgf("Available systems: %s", registeredSystems)
 	f, ok := registeredSystems[conf.Auth.Name]
 	if !ok {
 		return nil, fmt.Errorf("Unsupported authentication system: %s", conf.Auth.Name)
@@ -70,5 +64,5 @@ func New(conf *config.Configuration) (Authentication, error) {
 }
 
 func GetAuthenticationHeader(authentication Authentication, token string) string {
-	return fmt.Sprintf("%s %s", authentication.Key(), token)
+	return fmt.Sprintf("%s %s", authentication.Name(), token)
 }

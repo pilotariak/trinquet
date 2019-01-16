@@ -22,21 +22,21 @@ import (
 
 // Configuration holds configuration for Enigma.
 type Configuration struct {
-	Backend string
-	API     *APIConfiguration
-	BoltDB  *BoltDBConfiguration
-	Tracing *TracingConfiguration
-	Auth    *AuthConfiguration
+	Backend     string
+	API         *APIConfiguration
+	BoltDB      *BoltDBConfiguration
+	Auth        *AuthConfiguration
+	Credentials *CredentialsConfiguration
 }
 
 // New returns a Configuration with default values
 func New() *Configuration {
 	return &Configuration{
-		Backend: "boltdb",
-		BoltDB:  &BoltDBConfiguration{},
-		API:     &APIConfiguration{},
-		Tracing: &TracingConfiguration{},
-		Auth:    &AuthConfiguration{},
+		Backend:     "boltdb",
+		BoltDB:      &BoltDBConfiguration{},
+		API:         &APIConfiguration{},
+		Auth:        &AuthConfiguration{},
+		Credentials: &CredentialsConfiguration{},
 	}
 }
 
@@ -61,38 +61,35 @@ type BoltDBConfiguration struct {
 	File   string
 }
 
-type ZipkinConfiguration struct {
-	Host string
-	Port int
-}
-
-type AppdashConfiguration struct {
-	Host string
-	Port int
-}
-
-type JaegerConfiguration struct {
-	Host string
-	Port int
-}
-
-// TracingConfiguration defines the OpenTracing usage
-type TracingConfiguration struct {
-	Name    string
-	Zipkin  *ZipkinConfiguration
-	Appdash *AppdashConfiguration
-	Jaeger  *JaegerConfiguration
-}
-
-type AuthConfiguration struct {
+type CredentialsConfiguration struct {
 	Name  string
-	Vault *VaultConfiguration
+	Text  *TextCredentialsConfiguration
+	Vault *VaultCredentialsConfiguration
 }
 
-type VaultConfiguration struct {
+type TextCredentialsConfiguration struct {
+	Username string
+	Password string
+}
+
+type VaultCredentialsConfiguration struct {
 	Address    string
 	Roleid     string
 	Secretid   string
 	HealthUser string `toml:"healthuser"`
 	HealthKey  string `toml:"healthkey"`
+}
+
+type AuthConfiguration struct {
+	Name      string
+	BasicAuth *BasicAuthConfiguration
+	JWT       *JWTConfiguration
+}
+
+type BasicAuthConfiguration struct {
+}
+
+type JWTConfiguration struct {
+	SigningKey string
+	Secret     string
 }

@@ -42,40 +42,27 @@ You can download the binaries :
 
 ## Usage
 
-Launch Zipkin with Docker, and open a browser on 9411:
-
-    $ docker run -d -p 9411:9411 openzipkin/zipkin
-
-or Jaeger with Docker (open a browser on 16686):
-
-    $ docker run -d -p5775:5775/udp -p16686:16686 jaegertracing/all-in-one:latest
-
-Use the *trinquetd* CLI to launch a server:
-
-    $ trinquetd run -config trinquet.toml -v 2 -logtostderr
-
-Use the *trinquetctl* CLI to manage pelota informations.
-
-Use the *trinquetadm* CLI to manage the server.
-
-You could explore the API using [Swagger](http://swagger.io/) UI :
-
-    http://localhost:9090/swagger-ui/
-
 
 ## Development
 
-* Initialize environment
+### Kubernetes / Minikube
+
+* Install Kubernetes tools (`minikube` and `kubectl` tools):
 
         $ make init
 
-* Build tool :
+* Create the Kubernetes development cluster with minikube:
 
-        $ make build
+        $ make minikube-start
+        $ make minikube-status
+        $ make minikube-dashboard
 
-* Launch unit tests :
+### Database
 
-        $ make test
+* Install tools (`migrate` and `schemacrawler`):
+
+        $ make init
+
 
 ## Contributing
 

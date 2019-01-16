@@ -24,31 +24,38 @@ import (
 
 	"github.com/pilotariak/trinquet/pkg/auth"
 	"github.com/pilotariak/trinquet/pkg/config"
+	"github.com/pilotariak/trinquet/pkg/credentials"
 )
 
 type serverAuthentication struct {
-	Authentication auth.Authentication
+	authentication auth.Authentication
+	credentials    credentials.Credentials
 }
 
 func newServerAuthentication(conf *config.Configuration) (*serverAuthentication, error) {
-	log.Info().Msgf("Create the authentication system: %s", conf)
+	log.Info().Msgf("Create the server authentication system")
 	authentication, err := auth.New(conf)
 	if err != nil {
 		return nil, err
 	}
+	creds, err := credentials.New(conf)
+	if err != nil {
+		return nil, err
+	}
 	return &serverAuthentication{
-		Authentication: authentication,
+		authentication: authentication,
+		credentials:    creds,
 	}, nil
 }
 
 func (sa *serverAuthentication) authenticate(ctx context.Context) (context.Context, error) {
-	log.Info().Msgf("Check authentication using %s", sa.Authentication.Key())
+	log.Info().Msgf("Check authentication using %s", sa.authentication.Name())
 
-	token, err := grpc_auth.AuthFromMD(ctx, sa.Authentication.Key())
+	token, err := grpc_auth.AuthFromMD(ctx, sa.authentication.Name())
 	if err != nil {
 		return nil, err
 	}
-	headers, err := sa.Authentication.Authenticate(ctx, token)
+	headers, err := sa.authentication.Decode(ctx, sa.credentials, token)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, err.Error())
 	}

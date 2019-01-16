@@ -84,7 +84,7 @@ func printServerInformations(out io.Writer, resp *info.GetInfoResponse) error {
 
 	table.Append([]string{
 		serverService,
-		utils.ServerAddress,
+		"", // utils.ServerAddress,
 		resp.Version,
 		"OK",
 	})

@@ -32,8 +32,7 @@ import (
 	"github.com/pilotariak/trinquet/pb/info"
 	"github.com/pilotariak/trinquet/pb/v1beta"
 	"github.com/pilotariak/trinquet/pkg/api"
-	_ "github.com/pilotariak/trinquet/pkg/auth/basic"
-	_ "github.com/pilotariak/trinquet/pkg/auth/vault"
+
 	"github.com/pilotariak/trinquet/pkg/config"
 	"github.com/pilotariak/trinquet/pkg/middleware"
 	"github.com/pilotariak/trinquet/pkg/storage"

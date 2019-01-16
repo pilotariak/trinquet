@@ -30,8 +30,9 @@ import (
 
 	"github.com/pilotariak/trinquet/pkg/auth"
 	_ "github.com/pilotariak/trinquet/pkg/auth/basic"
-	_ "github.com/pilotariak/trinquet/pkg/auth/vault"
 	"github.com/pilotariak/trinquet/pkg/config"
+	_ "github.com/pilotariak/trinquet/pkg/credentials/text"
+	_ "github.com/pilotariak/trinquet/pkg/credentials/vault"
 	"github.com/pilotariak/trinquet/pkg/transport"
 )
 
@@ -50,33 +51,39 @@ type GRPCClient struct {
 
 func NewGRPCClient(cmd *cobra.Command) (*GRPCClient, error) {
 	setupFromEnvironmentVariables()
-	if len(Username) == 0 {
+	if len(username) == 0 {
 		return nil, ErrUsernameNotFound
 	}
-	if len(Password) == 0 {
+	if len(password) == 0 {
 		return nil, ErrApiKeyNotFound
 	}
-	if len(ServerAddress) == 0 {
+	if len(serverAddress) == 0 {
 		return nil, ErrGrpcAddressNotFound
 	}
 	conf := &config.Configuration{
+		Credentials: &config.CredentialsConfiguration{
+			Text: &config.TextCredentialsConfiguration{
+				Username: username,
+				Password: password,
+			},
+		},
 		Auth: &config.AuthConfiguration{
-			// Name: "vault",
+			Name: authSystem,
 			// Vault: &config.VaultConfiguration{
-			// 	Address: "https://vault.io",
+			// 	Address: "http://github.com/pilotariak",
 			// },
-			Name: "BasicAuth",
+			BasicAuth: &config.BasicAuthConfiguration{},
 		},
 	}
 	authentication, err := auth.New(conf)
 	if err != nil {
 		return nil, err
 	}
-	glog.V(2).Infof("gRPC client created: %s %s", ServerAddress, Username)
+	glog.V(2).Infof("gRPC client created: %s %s", serverAddress, username)
 	return &GRPCClient{
-		ServerAddress:  ServerAddress,
-		Username:       Username,
-		Password:       Password,
+		ServerAddress:  serverAddress,
+		Username:       username,
+		Password:       password,
 		Authentication: authentication,
 	}, nil
 }
@@ -92,12 +99,11 @@ func (client *GRPCClient) GetConn() (*grpc.ClientConn, error) {
 
 func (client *GRPCClient) GetContext(cliName string) (context.Context, error) {
 	ctx := context.Background()
-	token, err := client.Authentication.Credentials(ctx, client.Username, client.Password)
+	token, err := client.Authentication.Encode(ctx, client.Username, client.Password)
 	if err != nil {
 		return nil, err
 	}
 	headers := map[string]string{
-		// transport.Authorization: fmt.Sprintf("%s %s", client.Authentication.Key(), auth),
 		transport.Authorization: auth.GetAuthenticationHeader(client.Authentication, token),
 	}
 	if host, err := os.Hostname(); err != nil {

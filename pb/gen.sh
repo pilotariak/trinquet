@@ -17,16 +17,16 @@
 function generate_grpcgw {
     pushd $1
     echo "> Generate gRPC for $1"
-    ls *.pb.go
+    # ls *.pb.go
     rm -rf *.pb.go
     protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
        --go_out=plugins=grpc:. *.proto
 
     echo "> Generate gRPC Gateway for $1"
-    ls *.pb.gw.go
     rm -rf *.pb.gw.go
     protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
        --grpc-gateway_out=logtostderr=true:. *.proto
+    ls *.pb.gw.go
 
     echo "> Generate Swagger for $1"
     rm -rf ../swagger/*.swagger.json
@@ -51,6 +51,7 @@ function generate_swagger {
     go run ./swagger/swagger.go swagger > swagger/api.swagger.json
 }
 
+generate_grpcgw v1
 generate_grpcgw v1beta
 generate_grpc health
 generate_grpc info

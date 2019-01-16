@@ -29,19 +29,30 @@ const (
 
 	// GrpcAddr is the environment variable that points to the gRPC server
 	GrpcAddr = "TRINQUET_SERVER"
+
+	// AuthMethod is the system to used for authentication
+	AuthMethod = "TRINQUET_AUTH_SYSTEM"
+)
+
+const (
+	defaultAuthSystem = "basic"
 )
 
 var (
-	Username string
-	Password string
-
-	ServerAddress string
+	username      string
+	password      string
+	authSystem    string
+	serverAddress string
 	// RestAddress   string
 )
 
 func setupFromEnvironmentVariables() {
-	Username = os.Getenv(UsernameEnvVar)
-	Password = os.Getenv(ApikeyEnvVar)
-	ServerAddress = os.Getenv(GrpcAddr)
-	log.Debug().Msgf("Env: %s %s", Username, ServerAddress)
+	username = os.Getenv(UsernameEnvVar)
+	password = os.Getenv(ApikeyEnvVar)
+	serverAddress = os.Getenv(GrpcAddr)
+	authSystem = os.Getenv(AuthMethod)
+	if len(authSystem) == 0 {
+		authSystem = defaultAuthSystem
+	}
+	log.Debug().Msgf("Env: %s %s %s", username, serverAddress, authSystem)
 }

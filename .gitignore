@@ -1,4 +1,5 @@
-# Executables
+# Kubernetes
+k8s/deploy/minikube/
 
 # Files
 .DS_Store

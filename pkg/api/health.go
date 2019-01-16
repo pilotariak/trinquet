@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	healthServiceName = "health"
+	HealthServiceName = "HealthService"
 )
 
 type HealthService struct {
@@ -45,22 +45,35 @@ type HealthService struct {
 }
 
 func NewHealthService(conf *config.Configuration, uri string, services []string) (*HealthService, error) {
-	log.Info().Str("service", healthServiceName).Msg("Create the service")
+	log.Info().Str("service", HealthServiceName).Msg("Create the service")
 	rbac.AddRoles("health", "HealthService", map[string][]string{
 		"Status": []string{rbac.AdminRole},
+	})
+	rbac.AddRoles("grpc.health.v1", "Health", map[string][]string{
+		"Check": []string{rbac.AdminRole},
 	})
 	authentication, err := auth.New(conf)
 	if err != nil {
 		return nil, err
 	}
-	return &HealthService{
-		// Conf:     conf,
+	var healthKey string
+	var healthUser string
+	if conf.Auth.Name == "vault" {
+		healthUser = conf.Credentials.Vault.HealthUser
+		healthKey = conf.Credentials.Vault.HealthKey
+	} else {
+		healthUser = conf.Credentials.Text.Username
+		healthKey = conf.Credentials.Text.Password
+	}
+	service := &HealthService{
 		Authentication: authentication,
-		HealthKey:      conf.Auth.Vault.HealthKey,
-		HealthUser:     conf.Auth.Vault.HealthUser,
+		HealthKey:      healthKey,
+		HealthUser:     healthUser,
 		URI:            uri,
 		Services:       services,
-	}, nil
+	}
+	log.Info().Msgf("Health service configured for: %s", service)
+	return service, nil
 }
 
 func (service *HealthService) Status(ctx context.Context, req *health.StatusRequest) (*health.StatusResponse, error) {
@@ -85,7 +98,7 @@ func (service *HealthService) getClient(ctx context.Context) (healthpb.HealthCli
 	if err != nil {
 		return nil, nil, err
 	}
-	token, err := service.Authentication.Credentials(ctx, service.HealthUser, service.HealthKey)
+	token, err := service.Authentication.Encode(ctx, service.HealthUser, service.HealthKey)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -164,51 +177,3 @@ func (service *HealthService) Handler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 	return
 }
-
-// func (service *HealthService) Status(ctx context.Context, req *health.StatusRequest) (*health.StatusResponse, error) {
-// 	log.Info().Str("service", healthServiceName).Msg("Check status")
-
-// 	conn, err := grpc.Dial(service.URI, grpc.WithInsecure())
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	client := healthpb.NewHealthClient(conn)
-// 	token, err := service.Authentication.Credentials(ctx, service.HealthUser, service.HealthKey)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	log.Info().Str("service", healthServiceName).Msgf("Auth token: %s", token)
-// 	md := metadata.New(map[string]string{
-// 		transport.Authorization: auth.GetAuthenticationHeader(service.Authentication, token),
-// 		transport.UserID:        service.HealthUser,
-// 	})
-// 	newCtx := metadata.NewOutgoingContext(ctx, md)
-
-// 	servicesStatus := []*health.ServiceStatus{}
-// 	for _, service := range service.Services {
-// 		log.Info().Str("service", healthServiceName).Msgf("Check health service: %s", service)
-// 		resp, err := client.Check(newCtx, &healthpb.HealthCheckRequest{
-// 			Service: service,
-// 		})
-// 		if err != nil {
-// 			servicesStatus = append(servicesStatus, &health.ServiceStatus{
-// 				Name:   service,
-// 				Status: "KO",
-// 				Text:   err.Error(),
-// 			})
-// 		} else {
-// 			servicesStatus = append(servicesStatus, &health.ServiceStatus{
-// 				Name:   service,
-// 				Status: "OK",
-// 				Text:   fmt.Sprintf("%s", resp.Status),
-// 			})
-// 		}
-// 	}
-
-// 	resp := &health.StatusResponse{}
-// 	resp.Services = servicesStatus
-
-// 	log.Info().Str("service", healthServiceName).Msgf("Health response: %s", resp)
-// 	return resp, nil
-// }

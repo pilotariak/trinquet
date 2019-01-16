@@ -23,14 +23,27 @@ port = 9411
 host = "127.0.0.1"
 port = 9441
 
-[auth]
-name = "BasicAuth"
+[credentials]
+name = "text"
 # name = "vault"
 
-[auth.vault]
+[credentials.text]
+username = "admin"
+password = "nimda"
+
+[credentials.vault]
 address = "http://localhost:8200"
 roleid = "f9bdcf11-fb7f-119b-853a-e74bde982706"
 secretid = "5076619e-5072-58f2-44ab-9d2febe273ac"
 healthuser = "health"
 healthkey = "e5ab2920-25f9-4dcd-9182-e3847dce67ab"
+
+[auth]
+name = "BasicAuth"
+# name = "JWT"
+
+[auth.jwt]
+signingkey = "lQdSUrBnDomk+CjnMEkV4+pDdeFkN31qlqbgZGEp0jp/kL9ugLFY+DAIQvfmbvzFkiQS/fIJe2Kxwp+fLUmpCwCttJU3vsJi3xt1nLXwb/DvHtZc+Lhe3ceBBb8URUJouIxMzIHRzl+8lyK4VPZmHuauQp3ARrWY21rBYEpeQ/l4FVIu2UTLN/oEcNgE0GG70721JILlLA8Z9Sb1AHAVq7bQV3VYODN7h4S8p9MHPZLqYpSKr6hsg3uhU9so77SOHHXfbBEdQh/zJkTG75AN6YnUtkDyXa1RBOSNTKLSeVwNKE9+ayXI9ZrV7OtT3Pbn2uWJQ/X+R03m3EoJXj6QoA=="
+secret = "pilotariaksecretkey"
+
 
