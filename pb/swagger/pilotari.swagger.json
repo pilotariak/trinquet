@@ -1,0 +1,151 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "pilotari.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1beta/pilotaris": {
+      "get": {
+        "summary": "List returns all available Pilotaris",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1betaGetPilotarisResponse"
+            }
+          }
+        },
+        "tags": [
+          "PilotariService"
+        ]
+      }
+    },
+    "/v1beta/pilotris": {
+      "post": {
+        "summary": "Create creates a new Pilotari",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1betaCreatePilotariResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1betaCreatePilotariRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PilotariService"
+        ]
+      }
+    },
+    "/v1ibeta/pilotaris/{email}": {
+      "get": {
+        "summary": "Get return a Pilotari",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1betaGetPilotariResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PilotariService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "v1betaCreatePilotariRequest": {
+      "type": "object",
+      "properties": {
+        "firstname": {
+          "type": "string"
+        },
+        "lastname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        }
+      }
+    },
+    "v1betaCreatePilotariResponse": {
+      "type": "object",
+      "properties": {
+        "Pilotari": {
+          "$ref": "#/definitions/v1betaPilotari"
+        }
+      }
+    },
+    "v1betaGetPilotariResponse": {
+      "type": "object",
+      "properties": {
+        "Pilotari": {
+          "$ref": "#/definitions/v1betaPilotari"
+        }
+      }
+    },
+    "v1betaGetPilotarisResponse": {
+      "type": "object",
+      "properties": {
+        "pilotaris": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1betaPilotari"
+          }
+        }
+      }
+    },
+    "v1betaPilotari": {
+      "type": "object",
+      "properties": {
+        "firstname": {
+          "type": "string"
+        },
+        "lastname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone_number": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

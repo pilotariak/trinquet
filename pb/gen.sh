@@ -26,7 +26,7 @@ function generate_grpcgw {
     rm -rf *.pb.gw.go
     protoc -I /usr/local/include -I . -I ../../vendor -I ../googleapis \
        --grpc-gateway_out=logtostderr=true:. *.proto
-    ls *.pb.gw.go
+    # ls *.pb.gw.go
 
     echo "> Generate Swagger for $1"
     rm -rf ../swagger/*.swagger.json

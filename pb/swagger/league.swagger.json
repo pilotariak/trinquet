@@ -65,73 +65,6 @@
         ]
       }
     },
-    "/v1beta/tournaments": {
-      "get": {
-        "summary": "List returns all available Tournament",
-        "operationId": "List",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1betaGetTournamentsResponse"
-            }
-          }
-        },
-        "tags": [
-          "TournamentService"
-        ]
-      },
-      "post": {
-        "summary": "Create creates a new tournament",
-        "operationId": "Create",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1betaCreateTournamentResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1betaCreateTournamentRequest"
-            }
-          }
-        ],
-        "tags": [
-          "TournamentService"
-        ]
-      }
-    },
-    "/v1beta/tournaments/{name}": {
-      "get": {
-        "summary": "Get return a tournament",
-        "operationId": "Get",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1betaGetTournamentResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "TournamentService"
-        ]
-      }
-    },
     "/v1ibeta/leagues/{name}": {
       "get": {
         "summary": "Get return a league",
@@ -182,28 +115,6 @@
         }
       }
     },
-    "v1betaCreateTournamentRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "groups": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1betaGroup"
-          }
-        }
-      }
-    },
-    "v1betaCreateTournamentResponse": {
-      "type": "object",
-      "properties": {
-        "tournament": {
-          "$ref": "#/definitions/v1betaTournament"
-        }
-      }
-    },
     "v1betaDiscipline": {
       "type": "object",
       "properties": {
@@ -230,39 +141,6 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1betaLeague"
-          }
-        }
-      }
-    },
-    "v1betaGetTournamentResponse": {
-      "type": "object",
-      "properties": {
-        "tournament": {
-          "$ref": "#/definitions/v1betaTournament"
-        }
-      }
-    },
-    "v1betaGetTournamentsResponse": {
-      "type": "object",
-      "properties": {
-        "tournaments": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1betaTournament"
-          }
-        }
-      }
-    },
-    "v1betaGroup": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "team": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1betaTeam"
           }
         }
       }
@@ -304,52 +182,6 @@
           "type": "string"
         }
       }
-    },
-    "v1betaRound": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "first": {
-          "$ref": "#/definitions/v1betaTeam"
-        },
-        "second": {
-          "$ref": "#/definitions/v1betaTeam"
-        },
-        "score": {
-          "type": "string"
-        }
-      }
-    },
-    "v1betaTeam": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "v1betaTournament": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "groups": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/v1betaGroup"
-          }
-        },
-        "rounds": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1betaRound"
-          }
-        }
-      },
-      "title": "Tournament define a pelota league"
     }
   }
 }
