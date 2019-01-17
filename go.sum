@@ -62,6 +62,8 @@ github.com/census-instrumentation/opencensus-proto v0.1.0 h1:VwZ9smxzX8u14/125wH
 github.com/census-instrumentation/opencensus-proto v0.1.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/centrify/cloud-golang-sdk v0.0.0-20180119173102-7c97cc6fde16 h1:KXl7Kj2SRSZIvqafDrF3JoSX3olfAd+1V72deQaZGCs=
 github.com/centrify/cloud-golang-sdk v0.0.0-20180119173102-7c97cc6fde16/go.mod h1:C0rtzmGXgN78pYR0tGJFhtHgkbAs0lIbHwkB81VxDQE=
+github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead h1:ZD4cEDcmN+BfbhP3ogjWoVvSBKUbUJf2S3kEQoFAVTE=
+github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead/go.mod h1:hxaqjtaUOHLNhk40R49T3nZ+R+ZYP7Q0uUvBKUp5o18=
 github.com/chrismalek/oktasdk-go v0.0.0-20181212195951-3430665dfaa0 h1:CWU8piLyqoi9qXEUwzOh5KFKGgmSU5ZhktJyYcq6ryQ=
 github.com/chrismalek/oktasdk-go v0.0.0-20181212195951-3430665dfaa0/go.mod h1:5d8DqS60xkj9k3aXfL3+mXBH0DPYO0FQjcKosxl+b/Q=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

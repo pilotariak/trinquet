@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	_ "github.com/pilotariak/trinquet/pkg/auth/basic"
+	_ "github.com/pilotariak/trinquet/pkg/auth/jwt"
 	_ "github.com/pilotariak/trinquet/pkg/credentials/text"
 	_ "github.com/pilotariak/trinquet/pkg/credentials/vault"
 	"github.com/pilotariak/trinquet/pkg/server/trinquetd"

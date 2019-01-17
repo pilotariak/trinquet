@@ -15,7 +15,7 @@
 package api
 
 import (
-	"github.com/golang/glog"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 
 	"github.com/pilotariak/trinquet/pb/v1beta"
@@ -31,7 +31,7 @@ type LeagueService struct {
 }
 
 func NewLeagueService(backend storage.Backend) *LeagueService {
-	glog.V(2).Infof("Create the League service using %v", backend)
+	log.Info().Str("service", LeagueServiceName).Msgf("Create the League service using %v", backend)
 	service := &LeagueService{
 		Backend: backend,
 	}
@@ -44,7 +44,7 @@ func (service *LeagueService) Register() {
 }
 
 func (ls *LeagueService) List(ctx context.Context, request *v1beta.GetLeaguesRequest) (*v1beta.GetLeaguesResponse, error) {
-	glog.V(1).Info("[league] List all leagues")
+	log.Info().Str("service", LeagueServiceName).Msg("List all leagues")
 
 	theleagues, err := storage.ListAll(ls.Backend)
 	if err != nil {
@@ -54,12 +54,12 @@ func (ls *LeagueService) List(ctx context.Context, request *v1beta.GetLeaguesReq
 }
 
 func (ls *LeagueService) Create(ctx context.Context, request *v1beta.CreateLeagueRequest) (*v1beta.CreateLeagueResponse, error) {
-	glog.V(1).Info("[league] Create a new league")
+	log.Info().Str("service", LeagueServiceName).Msgf("Create a new league: %s", request)
 	return &v1beta.CreateLeagueResponse{}, nil
 }
 
 func (ls *LeagueService) Get(ctx context.Context, request *v1beta.GetLeagueRequest) (*v1beta.GetLeagueResponse, error) {
-	glog.V(1).Info("[league] Retrieve a league")
+	log.Info().Str("service", LeagueServiceName).Msgf("Retrieve a league: %s", request)
 	league, err := storage.RetrieveLeague(ls.Backend, request.Name)
 	if err != nil {
 		return nil, err

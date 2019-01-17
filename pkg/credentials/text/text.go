@@ -16,7 +16,6 @@ package text
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
@@ -38,7 +37,7 @@ func init() {
 	credentials.RegisterCredentials(name, newTextSystem)
 }
 
-func newTextSystem(conf *config.Configuration) (credentials.Credentials, error) {
+func newTextSystem(conf *config.Configuration) (credentials.CredentialsSystem, error) {
 	log.Info().Str("credentials", name).Msgf("Configure Text using: %s", conf.Credentials.Text)
 	return &textSystem{
 		username: conf.Credentials.Text.Username,
@@ -50,16 +49,12 @@ func (ts textSystem) Name() string {
 	return name
 }
 
-func (ts textSystem) Authenticate(ctx context.Context, token string) error {
-	log.Info().Str("credentials", name).Msgf("Authenticate with token: %s", token)
+func (ts textSystem) Authenticate(ctx context.Context, creds credentials.Credentials) error {
+	log.Info().Str("credentials", name).Msgf("Authenticate with token: %s", creds)
 
-	pair := strings.SplitN(token, ":", 2)
-	if len(pair) != 2 {
-		return fmt.Errorf("Not Authorized")
-	}
-	if pair[0] != ts.username || pair[1] != ts.password {
+	if creds.Username != ts.username || creds.Password != ts.password {
 		return fmt.Errorf("Unauthorized")
 	}
-	log.Info().Str("credentials", name).Msgf("User correctly authenticated %s ", pair[0])
+	log.Info().Str("credentials", name).Msgf("User correctly authenticated %s ", creds.Username)
 	return nil
 }

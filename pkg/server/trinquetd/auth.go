@@ -29,7 +29,7 @@ import (
 
 type serverAuthentication struct {
 	authentication auth.Authentication
-	credentials    credentials.Credentials
+	credentials    credentials.CredentialsSystem
 }
 
 func newServerAuthentication(conf *config.Configuration) (*serverAuthentication, error) {
@@ -51,10 +51,17 @@ func newServerAuthentication(conf *config.Configuration) (*serverAuthentication,
 func (sa *serverAuthentication) authenticate(ctx context.Context) (context.Context, error) {
 	log.Info().Msgf("Check authentication using %s", sa.authentication.Name())
 
-	token, err := grpc_auth.AuthFromMD(ctx, sa.authentication.Name())
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		log.Debug().Msgf("Metadata: %s", md)
+	}
+
+	log.Debug().Msgf("Extract informations from headers")
+	token, err := grpc_auth.AuthFromMD(ctx, sa.authentication.Scheme())
 	if err != nil {
 		return nil, err
 	}
+
 	headers, err := sa.authentication.Decode(ctx, sa.credentials, token)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, err.Error())

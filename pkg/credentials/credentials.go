@@ -23,7 +23,13 @@ import (
 	"github.com/pilotariak/trinquet/pkg/config"
 )
 
-type CredentialsFunc func(config *config.Configuration) (Credentials, error)
+type Credentials struct {
+	Username string
+	Password string
+	APIKey   string
+}
+
+type CredentialsFunc func(config *config.Configuration) (CredentialsSystem, error)
 
 var registeredSystems = map[string](CredentialsFunc){}
 
@@ -32,16 +38,16 @@ func RegisterCredentials(name string, f CredentialsFunc) {
 }
 
 // Credentials define a transport for credentials
-type Credentials interface {
+type CredentialsSystem interface {
 
 	// Name identify the system
 	Name() string
 
-	Authenticate(ctx context.Context, token string) error
+	Authenticate(ctx context.Context, credentials Credentials) error
 }
 
 // New returns a new credentials system using the name
-func New(conf *config.Configuration) (Credentials, error) {
+func New(conf *config.Configuration) (CredentialsSystem, error) {
 	log.Info().Msgf("Credentials setup: %s", conf.Credentials)
 	if conf.Credentials == nil {
 		return nil, fmt.Errorf("Invalid credentials configuration: %s", conf)

@@ -17,6 +17,7 @@ package basic
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
@@ -24,48 +25,61 @@ import (
 	"github.com/pilotariak/trinquet/pkg/auth"
 	"github.com/pilotariak/trinquet/pkg/config"
 	"github.com/pilotariak/trinquet/pkg/credentials"
-	// "github.com/pilotariak/trinquet/pkg/transport"
+	"github.com/pilotariak/trinquet/pkg/transport"
 )
 
 const (
-	// label = "BasicAuth"
-	key = "BasicAuth"
+	name   = "BasicAuth"
+	scheme = "basic"
 )
 
 type textSystem struct {
 }
 
 func init() {
-	auth.RegisterAuthentication(key, newBasicAuthSystem)
+	auth.RegisterAuthentication(name, newBasicAuthSystem)
 }
 
 func newBasicAuthSystem(conf *config.Configuration) (auth.Authentication, error) {
-	log.Info().Str("auth", key).Msgf("Configuration: %s", conf.Auth.BasicAuth)
+	log.Info().Str("auth", name).Msgf("Configuration: %s", conf.Auth.BasicAuth)
 	return &textSystem{}, nil
 }
 
 func (ba textSystem) Name() string {
-	return key
+	return name
+}
+
+func (ba textSystem) Scheme() string {
+	return scheme
 }
 
 func (ba textSystem) Encode(ctx context.Context, username string, password string) (string, error) {
-	log.Info().Str("auth", key).Msgf("Set credentials: %s", username)
+	log.Info().Str("auth", name).Msgf("Encode credentials: %s", username)
 	auth := username + ":" + password
 	token := base64.StdEncoding.EncodeToString([]byte(auth))
 	return token, nil
 }
 
-func (ba textSystem) Decode(ctx context.Context, credentials credentials.Credentials, token string) (map[string]string, error) {
-	log.Info().Str("auth", key).Msgf("Token to decode: %s", token)
+func (ba textSystem) Decode(ctx context.Context, credsSystem credentials.CredentialsSystem, token string) (map[string]string, error) {
+	log.Info().Str("auth", name).Msgf("Decode token: %s", token)
 	b, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		return nil, fmt.Errorf("Can't decode authentication token: %s", err)
 	}
 
-	if err := credentials.Authenticate(ctx, string(b)); err != nil {
+	pair := strings.SplitN(string(b), ":", 2)
+	if len(pair) != 2 {
+		return nil, fmt.Errorf("Not Authorized")
+	}
+	creds := credentials.Credentials{
+		Username: pair[0],
+		Password: pair[1],
+	}
+	if err := credsSystem.Authenticate(ctx, creds); err != nil {
 		return nil, err
 	}
 
 	headers := map[string]string{}
+	headers[transport.Username] = creds.Username
 	return headers, nil
 }

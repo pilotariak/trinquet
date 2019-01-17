@@ -27,6 +27,7 @@ import (
 var (
 	cliName           = "trinquetctl"
 	helpMessage       = "Trinquetctl - The CLI for Trinquet"
+	tokenFile         = "/tmp/pilotariak"
 	completionExample = `
                # Load the trinquetctl completion code for bash into the current shell
                source <(trinquetctl completion bash)
@@ -48,8 +49,8 @@ func NewTrinquetctlCommand(out io.Writer) *cobra.Command {
 		Long:  `Trinquetctl is a command-line tool to interact with a Trinquet server.`,
 	}
 	rootCmd.AddCommand(
+		newAuthCmd(out),
 		newLeagueCmd(out),
-		// newInfoCmd(out),
 		utils.NewVersionCmd(out, helpMessage),
 		utils.NewCompletionCommand(out, completionExample),
 	)

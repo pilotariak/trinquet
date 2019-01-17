@@ -93,10 +93,11 @@ func (cmd leagueCmd) listLeagues(gRPCClient *utils.GRPCClient) error {
 	defer conn.Close()
 
 	client := v1beta.NewLeagueServiceClient(conn)
-	ctx, err := gRPCClient.GetContext(cliName)
+	ctx, err := gRPCClient.GetContext(cliName, tokenFile)
 	if err != nil {
 		return err
 	}
+
 	resp, err := client.List(ctx, &v1beta.GetLeaguesRequest{})
 	if err != nil {
 		return err

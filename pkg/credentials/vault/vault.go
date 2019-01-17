@@ -59,7 +59,7 @@ func init() {
 	credentials.RegisterCredentials(name, newVaultSystem)
 }
 
-func newVaultSystem(conf *config.Configuration) (credentials.Credentials, error) {
+func newVaultSystem(conf *config.Configuration) (credentials.CredentialsSystem, error) {
 	log.Info().Str("credentials", name).Msgf("Configure Vault using: %s", conf.Credentials.Vault)
 
 	if len(conf.Credentials.Vault.Address) == 0 {
@@ -93,8 +93,8 @@ func (vs vaultSystem) Name() string {
 	return name
 }
 
-func (vs vaultSystem) Authenticate(ctx context.Context, apiKey string) error {
-	log.Info().Str("credentials", name).Msgf("Check Vault token: %s", apiKey)
+func (vs vaultSystem) Authenticate(ctx context.Context, creds credentials.Credentials) error {
+	log.Info().Str("credentials", name).Msgf("Check Vault credentials: %s", creds)
 
 	if err := vs.login(); err != nil {
 		return err
@@ -119,7 +119,7 @@ func (vs vaultSystem) Authenticate(ctx context.Context, apiKey string) error {
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, fmt.Sprintf("Invalid authentication with this secret. %s %s", cuid, secret.Data))
 	}
-	if apiKeyAuth != apiKey {
+	if apiKeyAuth != creds.APIKey {
 		return status.Errorf(codes.Unauthenticated, InvalidAPIKey)
 	}
 	name, err := getEntry(secret, "name")

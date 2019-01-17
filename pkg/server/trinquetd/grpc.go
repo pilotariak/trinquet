@@ -16,20 +16,26 @@ package trinquetd
 
 import (
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
+	"github.com/cheapRoc/grpc-zerolog"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/mwitkow/go-grpc-middleware"
 	"github.com/mwitkow/go-grpc-middleware/auth"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
 	ghealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/pilotariak/trinquet/pb/health"
 	"github.com/pilotariak/trinquet/pb/info"
+	"github.com/pilotariak/trinquet/pb/v1"
 	"github.com/pilotariak/trinquet/pb/v1beta"
 	"github.com/pilotariak/trinquet/pkg/api"
 
@@ -37,6 +43,14 @@ import (
 	"github.com/pilotariak/trinquet/pkg/middleware"
 	"github.com/pilotariak/trinquet/pkg/storage"
 )
+
+func init() {
+	logger := log.Output(zerolog.ConsoleWriter{
+		TimeFormat: time.RFC822,
+		Out:        os.Stdout,
+	}).Level(zerolog.WarnLevel)
+	grpclog.SetLoggerV2(grpczerolog.New(logger))
+}
 
 func registerServer(backend storage.Backend, serverAuth *serverAuthentication, conf *config.Configuration, grpcAddr string) (*grpc.Server, *api.HealthService, error) {
 	log.Info().Str("address", grpcAddr).Msg("Create the gRPC server")
@@ -47,11 +61,17 @@ func registerServer(backend storage.Backend, serverAuth *serverAuthentication, c
 			grpc_middleware.ChainUnaryServer(
 				middleware.ServerLoggingInterceptor(true),
 				grpc_prometheus.UnaryServerInterceptor,
+				// https://github.com/grpc-ecosystem/go-grpc-middleware/issues/176
 				grpc_auth.UnaryServerInterceptor(serverAuth.authenticate))),
+		// )),
 	)
 
 	v1beta.RegisterLeagueServiceServer(server, api.NewLeagueService(backend))
-
+	authService, err := api.NewAuthenticationService(conf)
+	if err != nil {
+		return nil, nil, err
+	}
+	v1.RegisterAuthServiceServer(server, authService)
 	info.RegisterInfoServiceServer(server, api.NewInfoService(conf))
 	healthService, err := api.NewHealthService(conf, grpcAddr, api.Services)
 	if err != nil {
@@ -77,6 +97,9 @@ func registerGateway(ctx context.Context, addr string) (*runtime.ServeMux, error
 	}
 	gwmux := runtime.NewServeMux()
 	if err := v1beta.RegisterLeagueServiceHandlerFromEndpoint(ctx, gwmux, addr, opts); err != nil {
+		return nil, err
+	}
+	if err := v1.RegisterAuthServiceHandlerFromEndpoint(ctx, gwmux, addr, opts); err != nil {
 		return nil, err
 	}
 	return gwmux, nil

@@ -15,10 +15,12 @@
 package utils
 
 import (
-	"bytes"
+	// "bytes"
 	"errors"
-	"net"
-	"os"
+	"fmt"
+	// "net"
+	// "os"
+	"io/ioutil"
 
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
@@ -28,9 +30,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/pilotariak/trinquet/pkg/auth"
+	// "github.com/pilotariak/trinquet/pkg/auth"
 	_ "github.com/pilotariak/trinquet/pkg/auth/basic"
-	"github.com/pilotariak/trinquet/pkg/config"
+	_ "github.com/pilotariak/trinquet/pkg/auth/jwt"
+	// "github.com/pilotariak/trinquet/pkg/config"
 	_ "github.com/pilotariak/trinquet/pkg/credentials/text"
 	_ "github.com/pilotariak/trinquet/pkg/credentials/vault"
 	"github.com/pilotariak/trinquet/pkg/transport"
@@ -43,10 +46,11 @@ var (
 )
 
 type GRPCClient struct {
-	ServerAddress  string
-	Username       string
-	Password       string
-	Authentication auth.Authentication
+	ServerAddress string
+	Username      string
+	Password      string
+	AuthSystem    string
+	// Authentication auth.Authentication
 }
 
 func NewGRPCClient(cmd *cobra.Command) (*GRPCClient, error) {
@@ -60,31 +64,32 @@ func NewGRPCClient(cmd *cobra.Command) (*GRPCClient, error) {
 	if len(serverAddress) == 0 {
 		return nil, ErrGrpcAddressNotFound
 	}
-	conf := &config.Configuration{
-		Credentials: &config.CredentialsConfiguration{
-			Text: &config.TextCredentialsConfiguration{
-				Username: username,
-				Password: password,
-			},
-		},
-		Auth: &config.AuthConfiguration{
-			Name: authSystem,
-			// Vault: &config.VaultConfiguration{
-			// 	Address: "http://github.com/pilotariak",
-			// },
-			BasicAuth: &config.BasicAuthConfiguration{},
-		},
-	}
-	authentication, err := auth.New(conf)
-	if err != nil {
-		return nil, err
-	}
+	// conf := &config.Configuration{
+	// 	Credentials: &config.CredentialsConfiguration{
+	// 		Text: &config.TextCredentialsConfiguration{
+	// 			Username: username,
+	// 			Password: password,
+	// 		},
+	// 	},
+	// 	Auth: &config.AuthConfiguration{
+	// 		Name: authSystem,
+	// 		// Vault: &config.VaultConfiguration{
+	// 		// 	Address: "http://github.com/pilotariak",
+	// 		// },
+	// 		BasicAuth: &config.BasicAuthConfiguration{},
+	// 	},
+	// }
+	// authentication, err := auth.New(conf)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	glog.V(2).Infof("gRPC client created: %s %s", serverAddress, username)
 	return &GRPCClient{
-		ServerAddress:  serverAddress,
-		Username:       username,
-		Password:       password,
-		Authentication: authentication,
+		ServerAddress: serverAddress,
+		Username:      username,
+		Password:      password,
+		AuthSystem:    authSystem,
+		// Authentication: authentication,
 	}, nil
 }
 
@@ -97,30 +102,54 @@ func (client *GRPCClient) GetConn() (*grpc.ClientConn, error) {
 	)
 }
 
-func (client *GRPCClient) GetContext(cliName string) (context.Context, error) {
+func (client *GRPCClient) GetContext(cliName string, tokenFile ...string) (context.Context, error) {
 	ctx := context.Background()
-	token, err := client.Authentication.Encode(ctx, client.Username, client.Password)
-	if err != nil {
-		return nil, err
-	}
-	headers := map[string]string{
-		transport.Authorization: auth.GetAuthenticationHeader(client.Authentication, token),
-	}
-	if host, err := os.Hostname(); err != nil {
-		headers[transport.UserHostname] = host
-	}
-	addrs, _ := net.InterfaceAddrs()
-	var buffer bytes.Buffer
-	for _, a := range addrs {
-		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				buffer.WriteString(ipnet.IP.String() + " ")
-			}
+	// token, err := client.Authentication.Encode(ctx, client.Username, client.Password)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// headers := map[string]string{
+	// 	transport.Authorization: auth.GetAuthenticationHeader(client.Authentication, token),
+	// }
+	// if host, err := os.Hostname(); err != nil {
+	// 	headers[transport.UserHostname] = host
+	// }
+	// addrs, _ := net.InterfaceAddrs()
+	// var buffer bytes.Buffer
+	// for _, a := range addrs {
+	// 	if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+	// 		if ipnet.IP.To4() != nil {
+	// 			buffer.WriteString(ipnet.IP.String() + " ")
+	// 		}
+	// 	}
+	// }
+	// headers[transport.UserIP] = buffer.String()
+	// headers[transport.UserID] = client.Username
+
+	headers := map[string]string{}
+	if len(tokenFile) > 0 {
+		token, err := ioutil.ReadFile(tokenFile[0])
+		if err != nil {
+			return nil, err
 		}
+		authorization, err := authenticationHeader(client.AuthSystem, string(token))
+		if err != nil {
+			return nil, err
+		}
+		headers[transport.Authorization] = authorization
 	}
-	headers[transport.UserIP] = buffer.String()
-	headers[transport.UserID] = client.Username
 	md := metadata.New(headers)
 	glog.V(2).Infof("Transport metadata: %s", md)
 	return metautils.NiceMD(md).ToOutgoing(ctx), nil
+}
+
+func authenticationHeader(authSystem string, token string) (string, error) {
+	switch authSystem {
+	case "JWT":
+		return fmt.Sprintf("bearer %s", token), nil
+	case "BasicAuth":
+		return fmt.Sprintf("basic %s", token), nil
+	default:
+		return "", fmt.Errorf("Invalid authentication system: %s", authSystem)
+	}
 }

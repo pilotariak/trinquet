@@ -38,11 +38,14 @@ type Authentication interface {
 	// Name identify the system
 	Name() string
 
+	// Scheme defined the auth system scheme (basic, bearer, ...)
+	Scheme() string
+
 	// Encode build username and password into a token
 	Encode(ctx context.Context, username string, password string) (string, error)
 
 	// Decode decode the token
-	Decode(ctx context.Context, credentials credentials.Credentials, token string) (map[string]string, error)
+	Decode(ctx context.Context, credentials credentials.CredentialsSystem, token string) (map[string]string, error)
 }
 
 // New returns a new authentication system using the name
