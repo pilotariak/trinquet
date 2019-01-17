@@ -1,3 +1,8 @@
+# Binaries
+./trinquetd
+./trinquetctl
+./trinquetadm
+
 # Kubernetes
 k8s/deploy/minikube/
 
